@@ -1,0 +1,319 @@
+[
+    {
+        "name": "Function_0",
+        "ops": [
+            {
+                "cacheable": false,
+                "control_deps": [],
+                "element_type": "uint8_t",
+                "inputs": [],
+                "name": "Parameter_0",
+                "op": "Parameter",
+                "outputs": [
+                    "Parameter_0_0"
+                ],
+                "shape": [
+                    3073
+                ]
+            },
+            {
+                "control_deps": [],
+                "element_type": "float",
+                "inputs": [],
+                "name": "Constant_16",
+                "op": "Constant",
+                "outputs": [
+                    "Constant_16_0"
+                ],
+                "shape": [],
+                "value": [
+                    "3072"
+                ]
+            },
+            {
+                "control_deps": [],
+                "element_type": "float",
+                "inputs": [],
+                "name": "Constant_13",
+                "op": "Constant",
+                "outputs": [
+                    "Constant_13_0"
+                ],
+                "shape": [],
+                "value": [
+                    "3072"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Parameter_0"
+                ],
+                "lower_bounds": [
+                    1
+                ],
+                "name": "Slice_7",
+                "op": "Slice",
+                "outputs": [
+                    "Slice_7_0"
+                ],
+                "strides": [
+                    1
+                ],
+                "upper_bounds": [
+                    3073
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Parameter_0"
+                ],
+                "lower_bounds": [
+                    0
+                ],
+                "name": "Slice_22",
+                "op": "Slice",
+                "outputs": [
+                    "Slice_22_0"
+                ],
+                "strides": [
+                    1
+                ],
+                "upper_bounds": [
+                    1
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Slice_7"
+                ],
+                "name": "Convert_8",
+                "op": "Convert",
+                "outputs": [
+                    "Convert_8_0"
+                ],
+                "target_type": "float"
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Slice_22"
+                ],
+                "name": "Convert_23",
+                "op": "Convert",
+                "outputs": [
+                    "Convert_23_0"
+                ],
+                "target_type": "int32_t"
+            },
+            {
+                "control_deps": [],
+                "input_order": [
+                    0
+                ],
+                "inputs": [
+                    "Convert_8"
+                ],
+                "name": "Reshape_9",
+                "op": "Reshape",
+                "output_shape": [
+                    3,
+                    32,
+                    32
+                ],
+                "outputs": [
+                    "Reshape_9_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Convert_23"
+                ],
+                "name": "Result_26",
+                "op": "Result",
+                "outputs": [
+                    "Result_26_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "input_order": [
+                    1,
+                    2,
+                    0
+                ],
+                "inputs": [
+                    "Reshape_9"
+                ],
+                "name": "Reshape_10",
+                "op": "Reshape",
+                "output_shape": [
+                    32,
+                    32,
+                    3
+                ],
+                "outputs": [
+                    "Reshape_10_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Reshape_10",
+                    "Reshape_10"
+                ],
+                "name": "Multiply_11",
+                "op": "Multiply",
+                "outputs": [
+                    "Multiply_11_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Reshape_10"
+                ],
+                "name": "Sum_15",
+                "op": "Sum",
+                "outputs": [
+                    "Sum_15_0"
+                ],
+                "reduction_axes": [
+                    0,
+                    1,
+                    2
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Multiply_11"
+                ],
+                "name": "Sum_12",
+                "op": "Sum",
+                "outputs": [
+                    "Sum_12_0"
+                ],
+                "reduction_axes": [
+                    0,
+                    1,
+                    2
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Sum_15",
+                    "Constant_16"
+                ],
+                "name": "Divide_17",
+                "op": "Divide",
+                "outputs": [
+                    "Divide_17_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Sum_12",
+                    "Constant_13"
+                ],
+                "name": "Divide_14",
+                "op": "Divide",
+                "outputs": [
+                    "Divide_14_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Divide_17",
+                    "Divide_17"
+                ],
+                "name": "Multiply_18",
+                "op": "Multiply",
+                "outputs": [
+                    "Multiply_18_0"
+                ]
+            },
+            {
+                "axes": [
+                    0,
+                    1,
+                    2
+                ],
+                "control_deps": [],
+                "inputs": [
+                    "Divide_17"
+                ],
+                "name": "Broadcast_20",
+                "op": "Broadcast",
+                "outputs": [
+                    "Broadcast_20_0"
+                ],
+                "shape": [
+                    32,
+                    32,
+                    3
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Divide_14",
+                    "Multiply_18"
+                ],
+                "name": "Subtract_19",
+                "op": "Subtract",
+                "outputs": [
+                    "Subtract_19_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Reshape_10",
+                    "Broadcast_20"
+                ],
+                "name": "Subtract_21",
+                "op": "Subtract",
+                "outputs": [
+                    "Subtract_21_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Subtract_19"
+                ],
+                "name": "Result_24",
+                "op": "Result",
+                "outputs": [
+                    "Result_24_0"
+                ]
+            },
+            {
+                "control_deps": [],
+                "inputs": [
+                    "Subtract_21"
+                ],
+                "name": "Result_25",
+                "op": "Result",
+                "outputs": [
+                    "Result_25_0"
+                ]
+            }
+        ],
+        "parameters": [
+            "Parameter_0"
+        ],
+        "result": [
+            "Result_24",
+            "Result_25",
+            "Result_26"
+        ]
+    }
+]

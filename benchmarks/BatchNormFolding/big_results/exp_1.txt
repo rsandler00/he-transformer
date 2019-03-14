@@ -1,0 +1,184 @@
+[INFO] 2019-03-13T21:12:59z src/seal/ckks/he_seal_ckks_backend.cpp 66	Using SEAL CKKS config with 4 30-bit coefficients
+Note: Google Test filter = HE_SEAL_CKKS.batch_norm_fusion_he_large
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from HE_SEAL_CKKS
+[ RUN      ] HE_SEAL_CKKS.batch_norm_fusion_he_large
+[INFO] 2019-03-13T21:12:59z src/seal/he_seal_util.hpp 47	
+/ Encryption parameters:
+| scheme: HE:SEAL:CKKS
+| poly_modulus: 8192
+| coeff_modulus size: 120 bits
+\ noise_standard_deviation: 3.2
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 474	orig ops
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Parameter_0
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Constant_5
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Constant_4
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Constant_1
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Constant_3
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Constant_2
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Convolution_6
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	BatchNormInference_7
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 476	Result_8
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 479	optimized ops
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 481	Parameter_9
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 481	Constant_124
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 481	Constant_125
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 481	Convolution_113
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 481	Add_115
+[INFO] 2019-03-13T21:13:00z build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp 481	Result_17
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 333	[1;32m[ Parameter_0 ][0m
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 338	Parameter shape {1, 3, 32, 32}
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 333	[1;32m[ Constant_5 ][0m
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 343	Constant shape {40}
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 415	[1;31mConstant_5 took 13ms[0m
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 333	[1;32m[ Constant_4 ][0m
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 343	Constant shape {40}
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 415	[1;31mConstant_4 took 0ms[0m
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 333	[1;32m[ Constant_1 ][0m
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 343	Constant shape {40, 3, 5, 5}
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-13T21:13:00z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 415	[1;31mConstant_1 took 59ms[0m
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 333	[1;32m[ Constant_3 ][0m
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 343	Constant shape {40}
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 415	[1;31mConstant_3 took 17ms[0m
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 333	[1;32m[ Constant_2 ][0m
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 343	Constant shape {40}
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 415	[1;31mConstant_2 took 0ms[0m
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 333	[1;32m[ Convolution_6 ][0m
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-13T21:13:01z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-13T21:13:01z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 31360
+[INFO] 2019-03-13T21:13:01z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 7000
+[INFO] 2019-03-13T21:13:01z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 28000
+[INFO] 2019-03-13T21:13:02z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 14000
+[INFO] 2019-03-13T21:13:02z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-03-13T21:13:02z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 21000
+[INFO] 2019-03-13T21:13:35z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 30000
+[INFO] 2019-03-13T21:13:36z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 16000
+[INFO] 2019-03-13T21:13:36z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 23000
+[INFO] 2019-03-13T21:13:38z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 2000
+[INFO] 2019-03-13T21:13:38z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 9000
+[INFO] 2019-03-13T21:14:10z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 25000
+[INFO] 2019-03-13T21:14:10z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 18000
+[INFO] 2019-03-13T21:14:12z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 11000
+[INFO] 2019-03-13T21:14:17z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 4000
+[INFO] 2019-03-13T21:14:42z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 6000
+[INFO] 2019-03-13T21:14:42z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 13000
+[INFO] 2019-03-13T21:14:43z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 20000
+[INFO] 2019-03-13T21:14:45z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 27000
+[INFO] 2019-03-13T21:15:18z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 8000
+[INFO] 2019-03-13T21:15:19z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 29000
+[INFO] 2019-03-13T21:15:23z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 15000
+[INFO] 2019-03-13T21:15:29z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 22000
+[INFO] 2019-03-13T21:15:31z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 1000
+[INFO] 2019-03-13T21:15:52z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 3000
+[INFO] 2019-03-13T21:15:53z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 24000
+[INFO] 2019-03-13T21:15:53z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 31000
+[INFO] 2019-03-13T21:16:13z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 17000
+[INFO] 2019-03-13T21:16:14z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 10000
+[INFO] 2019-03-13T21:16:23z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 5000
+[INFO] 2019-03-13T21:16:26z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 19000
+[INFO] 2019-03-13T21:16:32z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 26000
+[INFO] 2019-03-13T21:16:51z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 12000
+[INFO] 2019-03-13T21:17:11z src/he_backend.cpp 415	[1;31mConvolution_6 took 249883ms[0m
+[INFO] 2019-03-13T21:17:11z src/he_backend.cpp 333	[1;32m[ BatchNormInference_7 ][0m
+[INFO] 2019-03-13T21:17:11z src/he_backend.cpp 469	Inputs: Plain, Plain
+[INFO] 2019-03-13T21:17:11z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-13T21:17:11z src/he_backend.cpp 550	eps 0.001
+[INFO] 2019-03-13T21:17:11z src/he_backend.cpp 551	args.size() 5
+[INFO] 2019-03-13T21:17:11z src/he_backend.cpp 555	Input shape 1x40x28x28
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 576	Done with BatchNormInference
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 415	[1;31mBatchNormInference_7 took 9758ms[0m
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 333	[1;32m[ Result_8 ][0m
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 415	[1;31mResult_8 took 6ms[0m
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 423	[1;32mTotal time 259736 (ms) [0m
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 333	[1;32m[ Parameter_9 ][0m
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 338	Parameter shape {1, 3, 32, 32}
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 333	[1;32m[ Constant_124 ][0m
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 343	Constant shape {1, 40, 28, 28}
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-13T21:17:20z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 415	[1;31mConstant_124 took 543ms[0m
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 333	[1;32m[ Constant_125 ][0m
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 343	Constant shape {40, 3, 5, 5}
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 469	Inputs: 
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 477	Outputs: Plain
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 415	[1;31mConstant_125 took 53ms[0m
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 333	[1;32m[ Convolution_113 ][0m
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-13T21:17:21z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-13T21:17:21z src/seal/kernel/convolution_seal.hpp 85	Convolution output size 31360
+[INFO] 2019-03-13T21:17:22z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 7000
+[INFO] 2019-03-13T21:17:22z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 21000
+[INFO] 2019-03-13T21:17:22z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 0
+[INFO] 2019-03-13T21:17:22z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 28000
+[INFO] 2019-03-13T21:17:22z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 14000
+[INFO] 2019-03-13T21:17:56z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 9000
+[INFO] 2019-03-13T21:18:01z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 30000
+[INFO] 2019-03-13T21:18:02z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 2000
+[INFO] 2019-03-13T21:18:02z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 23000
+[INFO] 2019-03-13T21:18:02z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 16000
+[INFO] 2019-03-13T21:18:33z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 11000
+[INFO] 2019-03-13T21:18:37z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 18000
+[INFO] 2019-03-13T21:18:39z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 25000
+[INFO] 2019-03-13T21:18:40z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 4000
+[INFO] 2019-03-13T21:19:12z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 27000
+[INFO] 2019-03-13T21:19:14z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 13000
+[INFO] 2019-03-13T21:19:16z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 6000
+[INFO] 2019-03-13T21:19:17z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 20000
+[INFO] 2019-03-13T21:19:43z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 22000
+[INFO] 2019-03-13T21:19:50z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 15000
+[INFO] 2019-03-13T21:19:53z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 29000
+[INFO] 2019-03-13T21:19:53z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 8000
+[INFO] 2019-03-13T21:19:54z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 1000
+[INFO] 2019-03-13T21:20:20z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 3000
+[INFO] 2019-03-13T21:20:21z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 10000
+[INFO] 2019-03-13T21:20:21z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 17000
+[INFO] 2019-03-13T21:20:26z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 24000
+[INFO] 2019-03-13T21:20:26z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 31000
+[INFO] 2019-03-13T21:21:05z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 26000
+[INFO] 2019-03-13T21:21:07z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 12000
+[INFO] 2019-03-13T21:21:09z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 19000
+[INFO] 2019-03-13T21:21:16z src/seal/kernel/convolution_seal.hpp 258	Finished out coord 5000
+[INFO] 2019-03-13T21:21:51z src/he_backend.cpp 415	[1;31mConvolution_113 took 269691ms[0m
+[INFO] 2019-03-13T21:21:51z src/he_backend.cpp 333	[1;32m[ Add_115 ][0m
+[INFO] 2019-03-13T21:21:51z src/he_backend.cpp 469	Inputs: Cipher, Plain
+[INFO] 2019-03-13T21:21:51z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-13T21:21:53z src/he_backend.cpp 415	[1;31mAdd_115 took 2156ms[0m
+[INFO] 2019-03-13T21:21:53z src/he_backend.cpp 333	[1;32m[ Result_17 ][0m
+[INFO] 2019-03-13T21:21:53z src/he_backend.cpp 469	Inputs: Cipher
+[INFO] 2019-03-13T21:21:53z src/he_backend.cpp 477	Outputs: Cipher
+[INFO] 2019-03-13T21:21:53z src/he_backend.cpp 415	[1;31mResult_17 took 7ms[0m
+[INFO] 2019-03-13T21:21:53z src/he_backend.cpp 423	[1;32mTotal time 272450 (ms) [0m
+/nfs/site/home/fboemer/repos/he-transformer/build/test/test_batch_norm_inference_HE_SEAL_CKKS.cpp:498: Failure
+Value of: test::all_close(read_vector<float>(t_orig_result), read_vector<float>(t_opt_result))
+  Actual: false (94.640632629394531 is not close to 95.07598876953125 at index 0
+94.640449523925781 is not close to 95.075828552246094 at index 1
+94.640548706054688 is not close to 95.075935363769531 at index 2
+94.640693664550781 is not close to 95.076095581054688 at index 3
+94.640701293945312 is not close to 95.076103210449219 at index 4
+diff count: 31360 out of 31360
+)
+Expected: true
+[  FAILED  ] HE_SEAL_CKKS.batch_norm_fusion_he_large (540025 ms)
+[----------] 1 test from HE_SEAL_CKKS (540026 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (540026 ms total)
+[  PASSED  ] 0 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] HE_SEAL_CKKS.batch_norm_fusion_he_large
+
+ 1 FAILED TEST
