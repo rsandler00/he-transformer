@@ -22,7 +22,7 @@
 
 ngraph::he::HETensor::HETensor(const element::Type& element_type,
                                const Shape& shape,
-                               const ngraph::he::HESealBackend* he_seal_backend,
+                               const ngraph::he::HESealBackend& he_seal_backend,
                                const bool batched, const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
           element_type, shape, name)),
@@ -53,20 +53,16 @@ ngraph::Shape ngraph::he::HETensor::batch_shape(const ngraph::Shape& shape,
   return batched_shape;
 }
 
-void ngraph::he::HETensor::check_io_bounds(const void* source,
-                                           size_t tensor_offset,
-                                           size_t n) const {
+void ngraph::he::HETensor::check_io_bounds(const void* source, size_t n) const {
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
 
   // Memory must be byte-aligned to type_byte_size
-  // tensor_offset and n are all in bytes
-  if (tensor_offset % type_byte_size != 0 || n % type_byte_size != 0) {
-    throw ngraph::ngraph_error(
-        "tensor_offset and n must be divisible by type_byte_size.");
+  if (n % type_byte_size != 0) {
+    throw ngraph::ngraph_error("n must be divisible by type_byte_size.");
   }
   // Check out-of-range
-  if ((tensor_offset + n) / type_byte_size > get_element_count()) {
+  if (n / type_byte_size > get_element_count()) {
     throw std::out_of_range("I/O access past end of tensor");
   }
 }

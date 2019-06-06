@@ -36,7 +36,7 @@ inline void avg_pool_seal(
     const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
     const Strides& window_movement_strides, const Shape& padding_below,
     const Shape& padding_above, bool include_padding_in_avg_computation,
-    const HESealBackend* he_seal_backend) {
+    const HESealBackend& he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -143,8 +143,7 @@ inline void avg_pool_seal(
     if (n_elements == 0) {
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
-    auto inv_n_elements =
-        HEPlaintext({1.f / n_elements}, he_seal_backend->complex_packing());
+    auto inv_n_elements = HEPlaintext({1.f / n_elements});
 
     ngraph::he::scalar_multiply_seal(*sum, inv_n_elements, sum, element::f32,
                                      he_seal_backend);
@@ -160,7 +159,7 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
                           const Shape& padding_below,
                           const Shape& padding_above,
                           bool include_padding_in_avg_computation,
-                          const HESealBackend* he_seal_backend) {
+                          const HESealBackend& he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -267,8 +266,7 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
     if (n_elements == 0) {
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
-    auto inv_n_elements =
-        HEPlaintext({1.f / n_elements}, he_seal_backend->complex_packing());
+    auto inv_n_elements = HEPlaintext({1.f / n_elements});
 
     ngraph::he::scalar_multiply_seal(sum, inv_n_elements, sum, element::f32,
                                      he_seal_backend);

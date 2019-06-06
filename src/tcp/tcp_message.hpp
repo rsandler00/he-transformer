@@ -30,6 +30,7 @@
 
 #include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
+#include "ngraph/util.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
@@ -136,8 +137,7 @@ class TCPMessage {
       throw std::invalid_argument("Request type not valid");
     }
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + max_body_length];
+    m_data = (char*)ngraph_malloc(header_length + max_body_length);
     encode_header();
     encode_message_type();
     encode_count();
@@ -152,12 +152,42 @@ class TCPMessage {
     m_data_size = stream.tellp();
 
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + body_length()];
+    m_data = (char*)ngraph_malloc(header_length + body_length());
     encode_header();
     encode_message_type();
     encode_count();
     encode_data(std::move(stream));
+  }
+
+  TCPMessage(const MessageType type,
+             const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers)
+      : m_type(type), m_count(ciphers.size()) {
+    NGRAPH_INFO << "Creating message from " << ciphers.size()
+                << " seal ciphertexts";
+
+    NGRAPH_CHECK(ciphers.size() > 0, "No ciphertexts in TCPMessage");
+    size_t cipher_size = ciphertext_size(ciphers[0]->ciphertext());
+    m_data_size = cipher_size * m_count;
+    NGRAPH_INFO << "cipher_size " << cipher_size;
+
+    check_arguments();
+    m_data = (char*)ngraph_malloc(header_length + body_length());
+    encode_header();
+    encode_message_type();
+    encode_count();
+
+#pragma omp parallel for
+    for (size_t i = 0; i < ciphers.size(); ++i) {
+      size_t offset = i * cipher_size;
+      std::stringstream ss;
+      // TODO: save directly to buffer
+      ciphers[i]->save(ss);
+      NGRAPH_CHECK(ciphertext_size(ciphers[i]->ciphertext()) == cipher_size,
+                   "Cipher sizes don't match");
+
+      std::stringbuf* pbuf = ss.rdbuf();
+      pbuf->sgetn(data_ptr() + offset, cipher_size);
+    }
   }
 
   TCPMessage(const MessageType type,
@@ -166,36 +196,28 @@ class TCPMessage {
     NGRAPH_INFO << "Creating message from " << ciphers.size()
                 << " seal ciphertexts";
 
-    // TODO: get size without saving!
-    std::stringstream first;
-    ciphers[0].save(first);
-    first.seekp(0, std::ios::end);
-    size_t first_cipher_size = first.tellp();
-    NGRAPH_INFO << "first_cipher_size " << first_cipher_size;
-
-    m_data_size = first_cipher_size * m_count;
-    NGRAPH_INFO << "m_data_size " << m_data_size;
+    NGRAPH_CHECK(ciphers.size() > 0, "No ciphertexts in TCPMessage");
+    size_t cipher_size = ciphertext_size(ciphers[0]);
+    m_data_size = cipher_size * m_count;
+    NGRAPH_INFO << "cipher_size " << cipher_size;
 
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + body_length()];
+    m_data = (char*)ngraph_malloc(header_length + body_length());
     encode_header();
     encode_message_type();
     encode_count();
 
 #pragma omp parallel for
     for (size_t i = 0; i < ciphers.size(); ++i) {
-      size_t offset = i * first_cipher_size;
+      size_t offset = i * cipher_size;
       std::stringstream ss;
       // TODO: save directly to buffer
       ciphers[i].save(ss);
-      ss.seekp(0, std::ios::end);
-      size_t cipher_size = ss.tellp();
-      NGRAPH_CHECK(cipher_size == first_cipher_size, "cipher size ",
-                   cipher_size, "doesn't match first", first_cipher_size);
+      NGRAPH_CHECK(ciphertext_size(ciphers[i]) == cipher_size,
+                   "Cipher sizes don't match");
 
       std::stringbuf* pbuf = ss.rdbuf();
-      pbuf->sgetn(data_ptr() + offset, first_cipher_size);
+      pbuf->sgetn(data_ptr() + offset, cipher_size);
     }
   }
 
@@ -203,8 +225,7 @@ class TCPMessage {
              const char* data)
       : m_type(type), m_count(count), m_data_size(size) {
     check_arguments();
-    // TODO: use malloc
-    m_data = new char[header_length + body_length()];
+    m_data = (char*)ngraph_malloc(header_length + body_length());
     encode_header();
     encode_message_type();
     encode_count();
@@ -236,11 +257,7 @@ class TCPMessage {
   TCPMessage& operator=(const TCPMessage&) = delete;
   TCPMessage(const TCPMessage& other) = delete;
 
-  ~TCPMessage() {
-    if (m_data != nullptr) {
-      delete[] m_data;
-    }
-  }
+  ~TCPMessage() { ngraph_free(m_data); }
 
   void check_arguments() {
     if (m_count < 0) {

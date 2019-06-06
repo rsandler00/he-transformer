@@ -44,8 +44,9 @@ class HESealExecutable : public runtime::Executable {
  public:
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
-                   const ngraph::he::HESealBackend* he_seal_backend,
-                   bool encrypt_data, bool encrypt_model, bool batch_data);
+                   ngraph::he::HESealBackend& he_seal_backend,
+                   bool encrypt_data, bool encrypt_model, bool batch_data,
+                   bool complex_packing);
 
   ~HESealExecutable() {
     if (m_enable_client) {
@@ -84,11 +85,12 @@ class HESealExecutable : public runtime::Executable {
                              const NodeWrapper& node_wrapper);
 
  private:
-  const HESealBackend* m_he_seal_backend;  // TODO: replace with context
+  HESealBackend& m_he_seal_backend;
   bool m_encrypt_data;
   bool m_encrypt_model;
   bool m_batch_data;
   bool m_is_compiled;
+  bool m_complex_packing;
 
   bool m_enable_client;
   size_t m_batch_size;
@@ -143,8 +145,6 @@ class HESealExecutable : public runtime::Executable {
   std::mutex m_client_inputs_mutex;
   std::condition_variable m_client_inputs_cond;
   bool m_client_inputs_received;
-
-  TCPMessage m_result_message;
 
   void generate_calls(const element::Type& type, const NodeWrapper& op,
                       const std::vector<std::shared_ptr<HETensor>>& outputs,

@@ -24,15 +24,13 @@ namespace ngraph {
 namespace he {
 class SealCiphertextWrapper {
  public:
-  SealCiphertextWrapper() {
-    set_complex_packing(false);
-    set_zero(false);
-  }
+  SealCiphertextWrapper() : m_complex_packing(false), m_is_zero(false) {}
 
-  SealCiphertextWrapper(const seal::Ciphertext& cipher) : m_ciphertext(cipher) {
-    set_complex_packing(false);
-    set_zero(false);
-  }
+  SealCiphertextWrapper(const seal::Ciphertext& cipher,
+                        bool complex_packing = false, bool is_zero = false)
+      : m_ciphertext(cipher),
+        m_complex_packing(complex_packing),
+        m_is_zero(is_zero) {}
 
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
   const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
@@ -42,19 +40,33 @@ class SealCiphertextWrapper {
   size_t size() const { return m_ciphertext.size(); }
 
   bool is_zero() const { return m_is_zero; }
-  void set_zero(bool toggle) { m_is_zero = toggle; }
+  bool& is_zero() { return m_is_zero; }
 
   double& scale() { return m_ciphertext.scale(); }
   const double scale() const { return m_ciphertext.scale(); }
 
   bool complex_packing() const { return m_complex_packing; }
-  void set_complex_packing(bool toggle) { m_complex_packing = toggle; }
+  bool& complex_packing() { return m_complex_packing; }
 
  private:
   bool m_complex_packing;
   bool m_is_zero;
   seal::Ciphertext m_ciphertext;
 };
+
+inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
+  // TODO: figure out why the extra 8 bytes
+  size_t expected_size = 8;
+  expected_size += sizeof(seal::parms_id_type);
+  expected_size += sizeof(seal::SEAL_BYTE);
+  // size64, poly_modulus_degere, coeff_mod_count
+  expected_size += 3 * sizeof(uint64_t);
+  // scale
+  expected_size += sizeof(double);
+  // data
+  expected_size += 8 * cipher.uint64_count();
+  return expected_size;
+}
 
 }  // namespace he
 }  // namespace ngraph

@@ -14,12 +14,15 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <memory>
+#include <vector>
+
 #include "seal/kernel/constant_seal.hpp"
 
 void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
                                const element::Type& element_type,
                                const void* data_ptr,
-                               const ngraph::he::HESealBackend* he_seal_backend,
+                               const ngraph::he::HESealBackend& he_seal_backend,
                                size_t count) {
   NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
   size_t type_byte_size = element_type.size();
@@ -31,15 +34,14 @@ void ngraph::he::constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
     float f = *(float*)src_with_offset;
-    out[i].set_values({f});
-    // Avoid encoding here (just-in-time encoding)
+    out[i].values() = {f};
   }
 }
 
 void ngraph::he::constant_seal(
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
     const element::Type& element_type, const void* data_ptr,
-    const ngraph::he::HESealBackend* he_seal_backend, size_t count) {
+    const ngraph::he::HESealBackend& he_seal_backend, size_t count) {
   NGRAPH_CHECK(element_type == element::f32, "Constant supports only f32 type");
   size_t type_byte_size = element_type.size();
   if (out.size() != count) {
@@ -49,9 +51,10 @@ void ngraph::he::constant_seal(
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     const void* src_with_offset = (void*)((char*)data_ptr + i * type_byte_size);
-    auto plaintext = HEPlaintext();
-    // TODO: complex batching?
-    he_seal_backend->encode(plaintext, src_with_offset, element_type, false);
-    he_seal_backend->encrypt(out[i], plaintext);
+
+    std::vector<float> values{*(float*)src_with_offset};
+    auto plaintext = HEPlaintext(values);
+    he_seal_backend.encrypt(out[i], plaintext,
+                            he_seal_backend.complex_packing());
   }
 }

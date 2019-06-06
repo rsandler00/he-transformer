@@ -28,7 +28,7 @@ namespace ngraph {
 namespace he {
 inline void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
                                      float alpha) {
-  const std::vector<float>& arg_vals = arg.get_values();
+  const std::vector<float>& arg_vals = arg.values();
   std::vector<float> out_vals(arg.num_values());
 
   auto bounded_relu = [alpha](float f) {
@@ -37,7 +37,7 @@ inline void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
 
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
                  bounded_relu);
-  out.set_values(out_vals);
+  out.values() = out_vals;
 }
 
 inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
@@ -51,10 +51,10 @@ inline void bounded_relu_seal(const std::vector<HEPlaintext>& arg,
 inline void scalar_bounded_relu_seal(
     const SealCiphertextWrapper& arg,
     std::shared_ptr<SealCiphertextWrapper>& out, float alpha,
-    const HESealBackend* he_seal_backend) {
+    const HESealBackend& he_seal_backend) {
   HEPlaintext plain;
-  he_seal_backend->decrypt(plain, arg);
-  const std::vector<float>& arg_vals = plain.get_values();
+  he_seal_backend.decrypt(plain, arg);
+  const std::vector<float>& arg_vals = plain.values();
   std::vector<float> out_vals(plain.num_values());
 
   auto bounded_relu = [alpha](float f) {
@@ -64,14 +64,14 @@ inline void scalar_bounded_relu_seal(
   std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
                  bounded_relu);
 
-  plain.set_values(out_vals);
-  he_seal_backend->encrypt(out, plain);
+  plain.values() = out_vals;
+  he_seal_backend.encrypt(out, plain, he_seal_backend.complex_packing());
 }
 
 inline void bounded_relu_seal(
     const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
-    float alpha, const HESealBackend* he_seal_backend) {
+    float alpha, const HESealBackend& he_seal_backend) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_bounded_relu_seal(*arg[i], out[i], alpha, he_seal_backend);
