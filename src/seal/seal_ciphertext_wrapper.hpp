@@ -49,58 +49,11 @@ class SealCiphertextWrapper {
   bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
 
-  void load(void* src) {
-    seal::parms_id_type parms_id{};
-    seal::SEAL_BYTE is_ntt_form_byte;
-    uint64_t size64 = 0;
-    uint64_t poly_modulus_degree = 0;
-    uint64_t coeff_mod_count = 0;
-    double scale = 0;
-
-    static constexpr std::array<size_t, 6> offsets = {
-        sizeof(seal::parms_id_type),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            2 * sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            3 * sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            3 * sizeof(uint64_t) + sizeof(double),
-    };
-
-    std::memcpy(&parms_id, src, sizeof(seal::parms_id_type));
-    std::memcpy(&is_ntt_form_byte, src + offsets[1], sizeof(seal::SEAL_BYTE));
-    std::memcpy(&size64, src + offsets[2], sizeof(uint64_t));
-    std::memcpy(&poly_modulus_degree, src + offsets[3], sizeof(uint64_t));
-    std::memcpy(&coeff_mod_count, src + offsets[4], sizeof(uint64_t));
-    std::memcpy(&scale, src + offsets[5], sizeof(double));
-
-    seal::IntArray<seal::Ciphertext::ct_coeff_type> new_data(
-        m_ciphertext.pool());
-
-    m_ciphertext.is_ntt_form() =
-        (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
-    m_ciphertext.scale() = scale;
-
-    // TODO: load/ verify context?
-    /* seal::EncryptionParameters parms(seal::scheme_type::CKKS);
-    parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus();
-    auto context = SEAALContext::Create(parms) */
-
-    m_ciphertext.reserve(size);
-
-    // std::memcpy(destination, (void*)cipher.data()), 8 *
-    // cipher.uint64_count());
-  }
-
  private:
   bool m_complex_packing;
   bool m_is_zero;
   seal::Ciphertext m_ciphertext;
-};
+};  // namespace he
 
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
   // TODO: figure out why the extra 8 bytes
@@ -149,7 +102,59 @@ inline void save(const seal::Ciphertext& cipher, void* destination) {
               8 * cipher.uint64_count());
 }
 
-inline void load(const seal::Ciphertext& cipher, void* src) {}
+inline void load(seal::Ciphertext& cipher, void* src) {
+  seal::parms_id_type parms_id{};
+  seal::SEAL_BYTE is_ntt_form_byte;
+  uint64_t size64 = 0;
+  uint64_t poly_modulus_degree = 0;
+  uint64_t coeff_mod_count = 0;
+  double scale = 0;
 
+  static constexpr std::array<size_t, 6> offsets = {
+      sizeof(seal::parms_id_type),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) + sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          2 * sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          3 * sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          3 * sizeof(uint64_t) + sizeof(double),
+  };
+
+  std::memcpy(&parms_id, src, sizeof(seal::parms_id_type));
+  std::memcpy(&is_ntt_form_byte, src + offsets[0], sizeof(seal::SEAL_BYTE));
+  std::memcpy(&size64, src + offsets[1], sizeof(uint64_t));
+  std::memcpy(&poly_modulus_degree, src + offsets[2], sizeof(uint64_t));
+  std::memcpy(&coeff_mod_count, src + offsets[3], sizeof(uint64_t));
+  std::memcpy(&scale, src + offsets[4], sizeof(double));
+
+  bool ntt_form = (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
+
+  NGRAPH_INFO << "Loaded nttform " << ntt_form;
+  NGRAPH_INFO << "loaded size64 " << size64;
+  NGRAPH_INFO << "Loaded poly_modulus_degree " << poly_modulus_degree;
+  NGRAPH_INFO << "Loaded coeff_mod_count " << coeff_mod_count;
+  NGRAPH_INFO << "Loaded scale " << scale;
+
+  seal::IntArray<seal::Ciphertext::ct_coeff_type> new_data(cipher.pool());
+
+  cipher.is_ntt_form() =
+      (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
+  cipher.scale() = scale;
+
+  // TODO: load/ verify context?
+  /* seal::EncryptionParameters parms(seal::scheme_type::CKKS);
+  parms.set_poly_modulus_degree(poly_modulus_degree);
+  parms.set_coeff_modulus();
+  auto context = SEALContext::Create(parms) */
+
+  cipher.reserve(size64);
+
+  //cipher.data().swap_with(new_data);
+
+  // std::memcpy(destination, (void*)cipher.data()), 8 *
+  // cipher.uint64_count());
+}
 }  // namespace he
 }  // namespace ngraph

@@ -17,8 +17,8 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "seal/seal.h"
 #include "ngraph/util.hpp"
+#include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
 using namespace std;
@@ -108,8 +108,19 @@ TEST(seal_util, save) {
 
   Ciphertext cipher_load;
 
+  auto print_cipher = [](seal::Ciphertext& cipher) {
+    NGRAPH_INFO << "ntt_form" << cipher.is_ntt_form();
+    NGRAPH_INFO << "scale" << cipher.scale();
+  };
+
+  NGRAPH_INFO << "Encrypted";
+  print_cipher(encrypted);
+
   ngraph::he::load(cipher_load, buffer);
 
+
+  NGRAPH_INFO << "Loaded";
+  print_cipher(cipher_load);
 
   ngraph::ngraph_free(buffer);
 }
