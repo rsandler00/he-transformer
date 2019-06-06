@@ -18,6 +18,8 @@
 
 #include "gtest/gtest.h"
 #include "seal/seal.h"
+#include "ngraph/util.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 using namespace std;
 
@@ -70,4 +72,44 @@ TEST(seal_example, seal_ckks_basics_i) {
   encrypted.scale() *= 3;
   decryptor.decrypt(encrypted, plain);
   encoder.decode(plain, input);
+}
+
+TEST(seal_util, save) {
+  using namespace seal;
+
+  EncryptionParameters parms(scheme_type::CKKS);
+  parms.set_poly_modulus_degree(8192);
+  parms.set_coeff_modulus(DefaultParams::coeff_modulus_128(8192));
+
+  auto context = SEALContext::Create(parms);
+  // print_parameters(context);
+
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys(60);
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  vector<double> input{0.0, 1.1, 2.2, 3.3};
+
+  Plaintext plain;
+  double scale = pow(2.0, 60);
+  encoder.encode(input, scale, plain);
+
+  Ciphertext encrypted;
+  encryptor.encrypt(plain, encrypted);
+
+  void* buffer = ngraph::ngraph_malloc(ngraph::he::ciphertext_size(encrypted));
+  ngraph::he::save(encrypted, buffer);
+
+  Ciphertext cipher_load;
+
+  ngraph::he::load(cipher_load, buffer);
+
+
+  ngraph::ngraph_free(buffer);
 }
