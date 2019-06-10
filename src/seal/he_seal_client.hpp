@@ -22,15 +22,12 @@
 #include <string>
 #include <vector>
 
-#include "seal/he_seal_util.hpp"
+#include "client_util.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
-using namespace ngraph;
-
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HESealClient {
  public:
@@ -41,15 +38,24 @@ class HESealClient {
 
   void set_seal_context();
 
-  void handle_message(const runtime::he::TCPMessage& message);
+  void handle_message(const ngraph::he::TCPMessage& message);
 
-  void write_message(const runtime::he::TCPMessage& message);
+  void handle_relu_request(const ngraph::he::TCPMessage& message);
 
-  bool is_done();
+  inline void write_message(ngraph::he::TCPMessage&& message) {
+    m_tcp_client->write_message(std::move(message));
+  }
 
-  std::vector<float> get_results();
+  inline bool is_done() { return m_is_done; }
+
+  inline std::vector<float> get_results() { return m_results; }
 
   void close_connection();
+
+  bool complex_packing() const { return m_complex_packing; }
+
+  void decode_to_real_vec(const seal::Plaintext& plain,
+                          std::vector<double>& output, bool complex);
 
  private:
   std::shared_ptr<TCPClient> m_tcp_client;
@@ -68,7 +74,8 @@ class HESealClient {
   bool m_is_done;
   std::vector<float> m_inputs;   // Function inputs
   std::vector<float> m_results;  // Function outputs
+
+  bool m_complex_packing{std::getenv("NGRAPH_COMPLEX_PACK") != nullptr};
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

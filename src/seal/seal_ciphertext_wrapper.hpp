@@ -16,25 +16,57 @@
 
 #pragma once
 
-#include "he_ciphertext.hpp"
+#include <memory>
+
 #include "seal/seal.h"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-struct SealCiphertextWrapper : public HECiphertext {
-  SealCiphertextWrapper(){};
-  SealCiphertextWrapper(const seal::Ciphertext& cipher)
-      : m_ciphertext(cipher) {}
+class SealCiphertextWrapper {
+ public:
+  SealCiphertextWrapper() : m_complex_packing(false), m_is_zero(false) {}
 
-  seal::Ciphertext& get_hetext() { return m_ciphertext; }
+  SealCiphertextWrapper(const seal::Ciphertext& cipher,
+                        bool complex_packing = false, bool is_zero = false)
+      : m_ciphertext(cipher),
+        m_complex_packing(complex_packing),
+        m_is_zero(is_zero) {}
 
-  void save(std::ostream& stream) const override { m_ciphertext.save(stream); }
+  seal::Ciphertext& ciphertext() { return m_ciphertext; }
+  const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
+  void save(std::ostream& stream) const { m_ciphertext.save(stream); }
+
+  size_t size() const { return m_ciphertext.size(); }
+
+  bool is_zero() const { return m_is_zero; }
+  bool& is_zero() { return m_is_zero; }
+
+  double& scale() { return m_ciphertext.scale(); }
+  const double scale() const { return m_ciphertext.scale(); }
+
+  bool complex_packing() const { return m_complex_packing; }
+  bool& complex_packing() { return m_complex_packing; }
+
+ private:
   seal::Ciphertext m_ciphertext;
+  bool m_complex_packing;
+  bool m_is_zero;
 };
-}  // namespace he_seal
+
+inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
+  // TODO: figure out why the extra 8 bytes
+  size_t expected_size = 8;
+  expected_size += sizeof(seal::parms_id_type);
+  expected_size += sizeof(seal::SEAL_BYTE);
+  // size64, poly_modulus_degere, coeff_mod_count
+  expected_size += 3 * sizeof(uint64_t);
+  // scale
+  expected_size += sizeof(double);
+  // data
+  expected_size += 8 * cipher.uint64_count();
+  return expected_size;
+}
+
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

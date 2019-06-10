@@ -34,48 +34,25 @@ using namespace ngraph;
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(tcp_message, encode_request) {
-  auto m = runtime::he::TCPMessage(runtime::he::MessageType::result_request);
+  auto m = ngraph::he::TCPMessage(ngraph::he::MessageType::result_request);
 
-  runtime::he::TCPMessage m2;
+  ngraph::he::TCPMessage m2;
   // read header
   std::memcpy(m2.header_ptr(), m.header_ptr(),
-              runtime::he::TCPMessage::header_length);
+              ngraph::he::TCPMessage::header_length);
   m2.decode_header();
   // read body
   std::memcpy(m2.body_ptr(), m.body_ptr(), m2.body_length());
   m2.decode_body();
 
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
-                        runtime::he::TCPMessage::header_length),
+                        ngraph::he::TCPMessage::header_length),
             0);
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
   EXPECT_EQ(m.message_type(), m2.message_type());
   EXPECT_EQ(m.count(), m2.count());
   EXPECT_EQ(m.num_bytes(), m2.num_bytes());
   EXPECT_EQ(m.data_size(), m2.data_size());
-}
-
-NGRAPH_TEST(tcp_message, copy) {
-  size_t count = 3;
-  size_t element_size = 10;
-  size_t size = count * element_size;
-  void* data = malloc(size);
-  std::memset(data, 7, size);  // Set data to have value 7
-  assert(data != nullptr);
-
-  auto m = runtime::he::TCPMessage(runtime::he::MessageType::eval_key, count,
-                                   size, (char*)data);
-  runtime::he::TCPMessage m2{m};
-
-  EXPECT_EQ(m.message_type(), m2.message_type());
-  EXPECT_EQ(m.count(), m2.count());
-  EXPECT_EQ(m.num_bytes(), m2.num_bytes());
-  EXPECT_EQ(m.data_size(), m2.data_size());
-
-  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
-                        runtime::he::TCPMessage::header_length),
-            0);
-  EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
 }
 
 NGRAPH_TEST(tcp_message, encode) {
@@ -86,20 +63,20 @@ NGRAPH_TEST(tcp_message, encode) {
   std::memset(data, 7, size);  // Set data to have value 7
   assert(data != nullptr);
 
-  auto m = runtime::he::TCPMessage(runtime::he::MessageType::none, count, size,
-                                   (char*)data);
+  auto m = ngraph::he::TCPMessage(ngraph::he::MessageType::none, count, size,
+                                  (char*)data);
 
-  runtime::he::TCPMessage m2;
+  ngraph::he::TCPMessage m2;
   // read header
   std::memcpy(m2.header_ptr(), m.header_ptr(),
-              runtime::he::TCPMessage::header_length);
+              ngraph::he::TCPMessage::header_length);
   m2.decode_header();
   // read body
   std::memcpy(m2.body_ptr(), m.body_ptr(), m2.body_length());
   m2.decode_body();
 
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
-                        runtime::he::TCPMessage::header_length),
+                        ngraph::he::TCPMessage::header_length),
             0);
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
   EXPECT_EQ(m.message_type(), m2.message_type());
@@ -116,18 +93,18 @@ NGRAPH_TEST(tcp_message, encode_large) {
   std::memset(data, 7, size);  // Set data to have value 7
   assert(data != nullptr);
 
-  auto m = runtime::he::TCPMessage(runtime::he::MessageType::none, count, size,
-                                   (char*)data);
+  auto m = ngraph::he::TCPMessage(ngraph::he::MessageType::none, count, size,
+                                  (char*)data);
 
-  runtime::he::TCPMessage m2;
+  ngraph::he::TCPMessage m2;
   std::memcpy(m2.header_ptr(), m.header_ptr(),
-              runtime::he::TCPMessage::header_length);
+              ngraph::he::TCPMessage::header_length);
   m2.decode_header();
   std::memcpy(m2.body_ptr(), m.body_ptr(), m2.body_length());
   m2.decode_body();
 
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(),
-                        runtime::he::TCPMessage::header_length),
+                        ngraph::he::TCPMessage::header_length),
             0);
   EXPECT_EQ(std::memcmp(m.header_ptr(), m2.header_ptr(), m2.num_bytes()), 0);
   EXPECT_EQ(m.message_type(), m2.message_type());

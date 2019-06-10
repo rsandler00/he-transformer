@@ -56,16 +56,16 @@ def find_boost_headers_dir():
     if os.environ.get('BOOST_HEADERS_PATH'):
         boost_headers_dir = os.environ.get('BOOST_HEADERS_PATH')
     else:
-        boost_headers_dir = os.path.join(BOOST_ROOT_DIR)
+        boost_headers_dir = [os.path.join(BOOST_ROOT_DIR)]
 
     found = os.path.exists(os.path.join(boost_headers_dir, 'boost/asio'))
+
     if not found:
         print('Cannot find boost library in {} make sure that '
               'BOOST_HEADERS_PATH is set correctly'.format(boost_headers_dir))
-        sys.exit(1)
-    else:
-        print('boost library found in {}'.format(boost_headers_dir))
-        return boost_headers_dir
+
+    print('boost library found in {}'.format(boost_headers_dir))
+    return boost_headers_dir
 
 
 def find_cxx_compiler():
@@ -101,15 +101,18 @@ print('NGRAPH_HE_INCLUDE_DIR', NGRAPH_HE_INCLUDE_DIR)
 print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
 
 include_dirs = [
-    PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, BOOST_INCLUDE_DIR,
-    PYBIND11_INCLUDE_DIR
+    PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, PYBIND11_INCLUDE_DIR,
+    BOOST_INCLUDE_DIR
 ]
+
 library_dirs = [NGRAPH_HE_LIB_DIR]
 
 libraries = ['he_seal_client']
 
 data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
                        for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
+print('data files', data_files)
+print('NGRAPH_HE_LIB_DIR', NGRAPH_HE_LIB_DIR)
 
 sources = ['py_he_seal_client/he_seal_client.cpp']
 
@@ -197,6 +200,7 @@ class BuildExt(build_ext):
                                         ext.extra_compile_args)
             self._add_extra_compile_arg('-flto', ext.extra_compile_args)
             self._add_extra_compile_arg('-fPIC', ext.extra_compile_args)
+            self._add_extra_compile_arg('-fopenmp', ext.extra_compile_args)
             add_platform_specific_link_args(ext.extra_link_args)
 
             ext.extra_compile_args += ['-Wformat', '-Wformat-security']

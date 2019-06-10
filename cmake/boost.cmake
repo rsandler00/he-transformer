@@ -16,11 +16,26 @@
 
 include(ExternalProject)
 
-find_package(Boost 1.69)
-if(Boost_FOUND)
-  message("Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS}")
-  include_directories(${Boost_INCLUDE_DIRS})
-else()
-  message(FATAL_ERROR "Boost not found")
-endif()
-add_library(boost INTERFACE)
+SET(BOOST_REPO_URL https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz)
+
+ExternalProject_Add(
+    ext_boost
+    PREFIX boost
+    URL ${BOOST_REPO_URL}
+    # Disable install step
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    UPDATE_COMMAND ""
+    EXCLUDE_FROM_ALL TRUE
+    )
+
+ExternalProject_Get_Property(ext_boost SOURCE_DIR)
+message("boost SOURCE_DIR ${SOURCE_DIR}")
+
+set(BOOST_HEADERS_PATH ${SOURCE_DIR})
+message("BOOST_HEADERS_PATH ${BOOST_HEADERS_PATH}")
+
+add_library(libboost INTERFACE)
+add_dependencies(libboost ext_boost)
+target_include_directories(libboost SYSTEM INTERFACE ${BOOST_HEADERS_PATH})

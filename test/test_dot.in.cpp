@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "he_backend.hpp"
 #include "ngraph/ngraph.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -47,12 +47,12 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
     auto t_b = inputs[1];
     auto t_result = results[0];
 
-    copy_data(t_a, vector<float>{1, 2, 3, 4});
+    copy_data(t_a, vector<float>{2, 2, 3, 4});
     copy_data(t_b, vector<float>{5, 6, 7, 8});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a, t_b});
     EXPECT_TRUE(
-        all_close(read_vector<float>(t_result), vector<float>{70}, 1e-3f));
+        all_close(read_vector<float>(t_result), vector<float>{75}, 1e-3f));
   }
 }
 
@@ -149,7 +149,7 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{3, 1};
   Shape shape_b{1};
@@ -170,6 +170,6 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_batch) {
   copy_data(t_b, vector<float>{4});
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
-                        generalized_read_vector<float>(t_result), 1e-3f));
+  EXPECT_TRUE(all_close((vector<float>{4, 8, 12}), read_vector<float>(t_result),
+                        1e-3f));
 }

@@ -18,18 +18,16 @@
 
 #include <memory>
 
-#include "he_backend.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-class HEBackend;
+class HESealBackend;
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const element::Type& element_type, const Shape& shape,
-           const HEBackend* he_backend, const bool batched = false,
+           const HESealBackend& he_seal_backend, const bool batched = false,
            const std::string& name = "external");
   virtual ~HETensor(){};
 
@@ -61,24 +59,22 @@ class HETensor : public runtime::Tensor {
   /// @brief Returns the shape of the expanded (batched) tensor.
   const Shape& get_expanded_shape() const { return get_shape(); };
 
-  inline size_t get_batch_size() noexcept { return m_batch_size; }
+  inline size_t get_batch_size() { return m_batch_size; }
 
   inline size_t get_batched_element_count() {
     return get_element_count() / get_batch_size();
   }
 
-  inline bool is_batched() noexcept { return m_batched; }
+  inline bool is_batched() { return m_batched; }
 
  protected:
-  void check_io_bounds(const void* p, size_t tensor_offset, size_t n) const;
+  void check_io_bounds(const void* p, size_t n) const;
 
+  const HESealBackend& m_he_seal_backend;
   bool m_batched;  // Whether or not the tensor is batched, i.e. stores more
                    // than one scalar per element.
   size_t m_batch_size;  // If m_batched, corresponds to first shape dimesion.
   Shape m_batched_shape;
-
-  const HEBackend* m_he_backend;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

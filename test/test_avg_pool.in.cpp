@@ -14,7 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "he_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "ngraph/ngraph.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
@@ -109,7 +109,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<runtime::he::HEBackend*>(backend.get());
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
   auto A = make_shared<op::Parameter>(element::f32, shape_a);
@@ -140,7 +140,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
              2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom,
              3 / denom}}})
           .get_vector(),
-      generalized_read_vector<float>(t_result)));
+      read_vector<float>(t_result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {

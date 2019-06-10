@@ -25,23 +25,32 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-namespace kernel {
-void scalar_negate(
-    const runtime::he::he_seal::SealCiphertextWrapper* arg,
-    std::shared_ptr<runtime::he::he_seal::SealCiphertextWrapper>& out,
-    const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend);
+void scalar_negate_seal(const SealCiphertextWrapper& arg,
+                        std::shared_ptr<SealCiphertextWrapper>& out,
+                        const element::Type& element_type,
+                        const HESealBackend& he_seal_backend);
 
-void scalar_negate(
-    const runtime::he::he_seal::SealPlaintextWrapper* arg,
-    std::shared_ptr<runtime::he::he_seal::SealPlaintextWrapper>& out,
+void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
+                        const element::Type& element_type);
+
+inline void negate_seal(const std::vector<HEPlaintext>& arg,
+                        std::vector<HEPlaintext>& out,
+                        const element::Type& element_type, size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    scalar_negate_seal(arg[i], out[i], element_type);
+  }
+}
+
+inline void negate_seal(
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const element::Type& element_type,
-    const runtime::he::he_seal::HESealBackend* he_seal_backend);
-}  // namespace kernel
-}  // namespace he_seal
+    const ngraph::he::HESealBackend& he_seal_backend, size_t count) {
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_negate_seal(*arg[i], out[i], element_type, he_seal_backend);
+  }
+}
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

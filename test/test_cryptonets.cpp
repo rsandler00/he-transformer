@@ -17,7 +17,7 @@
 #include <assert.h>
 #include <algorithm>
 
-#include "seal/ckks/he_seal_ckks_backend.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
@@ -29,23 +29,19 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
+static std::string s_manifest = "";
 
-static string s_manifest = "";
-
-static void run_cryptonets_benchmark(string backend_name,
+static void run_cryptonets_benchmark(std::string backend_name,
                                      size_t batch_size = 1) {
   if (backend_name == "INTERPRETER") {
     assert(batch_size == 1);
   }
-  auto backend = runtime::Backend::create(backend_name);
-  auto he_backend = dynamic_cast<runtime::he::HEBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create(backend_name);
 
-  vector<float> x = read_binary_constant(
+  std::vector<float> x = read_binary_constant(
       file_util::path_join(HE_SERIALIZED_ZOO, "x_test_4096.bin"),
       batch_size * 784);
-  vector<float> y = read_binary_constant(
+  std::vector<float> y = read_binary_constant(
       file_util::path_join(HE_SERIALIZED_ZOO, "y_test_4096.bin"),
       batch_size * 10);
 
@@ -56,11 +52,12 @@ static void run_cryptonets_benchmark(string backend_name,
   // Load graph
   stopwatch sw_load_model;
   sw_load_model.start();
-  const string filename = "mnist_cryptonets_batch_" + to_string(batch_size);
-  const string json_path =
+  const std::string filename =
+      "mnist_cryptonets_batch_" + std::to_string(batch_size);
+  const std::string json_path =
       file_util::path_join(HE_SERIALIZED_ZOO, filename + ".json");
-  const string json_string = file_util::read_file_to_string(json_path);
-  shared_ptr<Function> f = deserialize(json_string);
+  const std::string json_string = file_util::read_file_to_string(json_path);
+  std::shared_ptr<Function> f = deserialize(json_string);
   NGRAPH_INFO << "Deserialize graph";
   NGRAPH_INFO << "x size " << x.size();
   NGRAPH_INFO << "Inputs loaded";
@@ -71,12 +68,12 @@ static void run_cryptonets_benchmark(string backend_name,
   stopwatch sw_encrypt_input;
   sw_encrypt_input.start();
   auto parameters = f->get_parameters();
-  vector<shared_ptr<runtime::Tensor>> parameter_tvs;
+  std::vector<std::shared_ptr<ngraph::runtime::Tensor>> parameter_tvs;
   for (const auto& parameter : parameters) {
     auto& shape = parameter->get_shape();
     auto& type = parameter->get_element_type();
 
-    std::shared_ptr<runtime::Tensor> parameter_cipher_tv =
+    std::shared_ptr<ngraph::runtime::Tensor> parameter_cipher_tv =
         backend->create_tensor(type, shape);
 
     NGRAPH_INFO << "Creating input shape: " << join(shape, "x");
@@ -87,12 +84,12 @@ static void run_cryptonets_benchmark(string backend_name,
       copy_data(parameter_cipher_tv, x);
       parameter_tvs.push_back(parameter_cipher_tv);
     } else {
-      throw ngraph_error("Invalid shape " + to_string(shape_size(shape)));
+      throw ngraph_error("Invalid shape " + std::to_string(shape_size(shape)));
     }
   }
 
   auto results = f->get_results();
-  vector<shared_ptr<runtime::Tensor>> result_tvs;
+  std::vector<std::shared_ptr<ngraph::runtime::Tensor>> result_tvs;
   for (const auto& result : results) {
     auto& shape = result->get_shape();
     auto& type = result->get_element_type();
@@ -116,9 +113,7 @@ static void run_cryptonets_benchmark(string backend_name,
   // Decrypt output
   stopwatch sw_decrypt_output;
   sw_decrypt_output.start();
-  auto result = (backend_name == "INTERPRETER")
-                    ? read_vector<float>(result_tvs[0])
-                    : generalized_read_vector<float>(result_tvs[0]);
+  auto result = read_vector<float>(result_tvs[0]);
   sw_decrypt_output.stop();
   NGRAPH_INFO << "sw_decrypt_output: " << sw_decrypt_output.get_milliseconds()
               << "ms";
@@ -128,8 +123,8 @@ static void run_cryptonets_benchmark(string backend_name,
   NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 
   // Check prediction vs ground truth
-  vector<int> y_gt_label = batched_argmax(y);
-  vector<int> y_predicted_label = batched_argmax(result);
+  std::vector<int> y_gt_label = batched_argmax(y);
+  std::vector<int> y_predicted_label = batched_argmax(result);
 
   size_t error_count = 0;
   for (size_t i = 0; i < y_gt_label.size(); ++i) {
@@ -160,46 +155,28 @@ static void run_cryptonets_benchmark(string backend_name,
   NGRAPH_INFO << "sw_global: " << sw_global.get_milliseconds() << "ms";
 };
 
-NGRAPH_TEST(Cryptonets, CKKS_1) { run_cryptonets_benchmark("HE_SEAL_CKKS", 1); }
+NGRAPH_TEST(Cryptonets, 1) { run_cryptonets_benchmark("HE_SEAL", 1); }
 
-NGRAPH_TEST(Cryptonets, CKKS_2) { run_cryptonets_benchmark("HE_SEAL_CKKS", 2); }
+NGRAPH_TEST(Cryptonets, 2) { run_cryptonets_benchmark("HE_SEAL", 2); }
 
-NGRAPH_TEST(Cryptonets, CKKS_4) { run_cryptonets_benchmark("HE_SEAL_CKKS", 4); }
+NGRAPH_TEST(Cryptonets, 4) { run_cryptonets_benchmark("HE_SEAL", 4); }
 
-NGRAPH_TEST(Cryptonets, CKKS_8) { run_cryptonets_benchmark("HE_SEAL_CKKS", 8); }
+NGRAPH_TEST(Cryptonets, 8) { run_cryptonets_benchmark("HE_SEAL", 8); }
 
-NGRAPH_TEST(Cryptonets, CKKS_16) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 16);
-}
+NGRAPH_TEST(Cryptonets, 16) { run_cryptonets_benchmark("HE_SEAL", 16); }
 
-NGRAPH_TEST(Cryptonets, CKKS_32) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 32);
-}
+NGRAPH_TEST(Cryptonets, 32) { run_cryptonets_benchmark("HE_SEAL", 32); }
 
-NGRAPH_TEST(Cryptonets, CKKS_64) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 64);
-}
+NGRAPH_TEST(Cryptonets, 64) { run_cryptonets_benchmark("HE_SEAL", 64); }
 
-NGRAPH_TEST(Cryptonets, CKKS_128) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 128);
-}
+NGRAPH_TEST(Cryptonets, 128) { run_cryptonets_benchmark("HE_SEAL", 128); }
 
-NGRAPH_TEST(Cryptonets, CKKS_256) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 256);
-}
+NGRAPH_TEST(Cryptonets, 256) { run_cryptonets_benchmark("HE_SEAL", 256); }
 
-NGRAPH_TEST(Cryptonets, CKKS_512) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 512);
-}
+NGRAPH_TEST(Cryptonets, 512) { run_cryptonets_benchmark("HE_SEAL", 512); }
 
-NGRAPH_TEST(Cryptonets, CKKS_1024) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 1024);
-}
+NGRAPH_TEST(Cryptonets, 1024) { run_cryptonets_benchmark("HE_SEAL", 1024); }
 
-NGRAPH_TEST(Cryptonets, CKKS_2048) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 2048);
-}
+NGRAPH_TEST(Cryptonets, 2048) { run_cryptonets_benchmark("HE_SEAL", 2048); }
 
-NGRAPH_TEST(Cryptonets, CKKS_4096) {
-  run_cryptonets_benchmark("HE_SEAL_CKKS", 4096);
-}
+NGRAPH_TEST(Cryptonets, 4096) { run_cryptonets_benchmark("HE_SEAL", 4096); }

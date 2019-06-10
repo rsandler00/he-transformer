@@ -16,33 +16,30 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "ngraph/assertion.hpp"
+#include "seal/seal.h"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
 class HEPlaintext {
  public:
-  HEPlaintext(){};
-  HEPlaintext(const std::vector<float> values)
-      : m_values(values), m_is_encoded(false){};
+  HEPlaintext(const std::vector<float> values = std::vector<float>{})
+      : m_values(values){};
+  HEPlaintext(const float value) : m_values{std::vector<float>{value}} {};
+
   virtual ~HEPlaintext(){};
 
-  void set_values(const std::vector<float>& values) { m_values = values; }
-  const std::vector<float>& get_values() const { return m_values; }
+  std::vector<float>& values() { return m_values; }
+  const std::vector<float>& values() const { return m_values; }
 
-  bool is_single_value() { return num_values() == 1; }
+  bool is_single_value() const { return num_values() == 1; }
   size_t num_values() const { return m_values.size(); }
 
-  bool is_encoded() const { return m_is_encoded; }
-  void set_encoded(bool encoded) { m_is_encoded = encoded; }
-
- protected:
+ private:
   std::vector<float> m_values;
-  bool m_is_encoded;
 };
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph

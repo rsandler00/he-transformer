@@ -16,40 +16,33 @@
 
 #pragma once
 
-#include <vector>
+#include <memory>
 
-#include "he_plaintext.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {
-namespace runtime {
 namespace he {
-namespace he_seal {
-struct SealPlaintextWrapper : public HEPlaintext {
+class SealPlaintextWrapper {
  public:
-  SealPlaintextWrapper(
-      seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
-    set_encoded(false);
-  }
-  SealPlaintextWrapper(const seal::Plaintext& plain, bool encoded)
-      : m_plaintext(plain) {
-    set_encoded(encoded);
-  }
-
   SealPlaintextWrapper(const seal::Plaintext& plain,
-                       const std::vector<float>& values)
-      : HEPlaintext(values), m_plaintext(plain) {
-    set_encoded(false);
-  }
+                       bool complex_packing = false)
+      : m_plaintext(plain), m_complex_packing(complex_packing) {}
 
-  inline seal::Plaintext& get_hetext() { return m_plaintext; }
-  inline seal::Plaintext& get_plaintext() { return m_plaintext; }
-  inline const seal::Plaintext& get_plaintext() const { return m_plaintext; }
+  SealPlaintextWrapper(bool complex_packing = false)
+      : m_complex_packing(complex_packing) {}
+
+  bool complex_packing() const { return m_complex_packing; }
+  bool& complex_packing() { return m_complex_packing; }
+
+  seal::Plaintext& plaintext() { return m_plaintext; }
+  const seal::Plaintext& plaintext() const { return m_plaintext; }
+
+  double& scale() { return m_plaintext.scale(); }
+  const double scale() const { return m_plaintext.scale(); }
 
  private:
+  bool m_complex_packing;
   seal::Plaintext m_plaintext;
 };
-}  // namespace he_seal
 }  // namespace he
-}  // namespace runtime
 }  // namespace ngraph
