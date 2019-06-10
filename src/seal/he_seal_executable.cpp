@@ -684,7 +684,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     auto t2 = Clock::now();
     NGRAPH_INFO << "Rescale_xxx took "
-                << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
+                << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
                                                                          t1)
                        .count()
                 << "ms";
