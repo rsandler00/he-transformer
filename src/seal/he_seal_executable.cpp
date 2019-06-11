@@ -676,7 +676,7 @@ void ngraph::he::HESealExecutable::generate_calls(
   auto out0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(out[0]);
   auto out0_plain = std::dynamic_pointer_cast<HEPlainTensor>(out[0]);
 
-  // TODO: move to static function
+  // TODO:remove once AvgPool rescaling works
   auto lazy_rescaling = [this](auto& cipher_tensor) {
     typedef std::chrono::high_resolution_clock Clock;
     auto t1 = Clock::now();
@@ -808,6 +808,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             avg_pool->get_padding_below(), avg_pool->get_padding_above(),
             avg_pool->get_include_padding_in_avg_computation(),
             m_he_seal_backend);
+        // TODO: remove once insert_rescale_after_avgpool pass works
         lazy_rescaling(out0_cipher);
 
       } else if (arg0_plain != nullptr && out0_plain != nullptr) {
@@ -825,8 +826,6 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::BatchNormInference: {
-      // TODO: enable
-
       const ngraph::op::BatchNormInference* bn =
           static_cast<const ngraph::op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
@@ -1036,14 +1035,12 @@ void ngraph::he::HESealExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_seal_backend);
-        // lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::dot_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             dot->get_reduction_axes_count(), type, m_he_seal_backend);
-        // lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::dot_seal(
@@ -1175,14 +1172,12 @@ void ngraph::he::HESealExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
-        // lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::multiply_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
-        // lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::multiply_seal(
