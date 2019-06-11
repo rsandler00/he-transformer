@@ -28,11 +28,13 @@ class HEFusion : public ngraph::pass::GraphRewrite {
     construct_bounded_relu();
     insert_rescale_after_dot();
     insert_rescale_after_multiply();
+    merge_rescales();
   }
 
   void construct_bounded_relu();
   void insert_rescale_after_dot();
   void insert_rescale_after_multiply();
+  void merge_rescales();
 };
 }  // namespace pass
 }  // namespace he

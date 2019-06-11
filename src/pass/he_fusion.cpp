@@ -132,3 +132,36 @@ void ngraph::he::pass::HEFusion::insert_rescale_after_multiply() {
       mul, callback, "HEFusion.InsertRescaleAfterMultiply");
   this->add_matcher(m);
 }
+
+void ngraph::he::pass::HEFusion::merge_rescales() {
+  auto rescale_input =
+      std::make_shared<pattern::op::Label>(element::f32, Shape{});
+  auto rescale1 = std::make_shared<ngraph::op::Rescale>(rescale_input);
+  auto rescale2 = std::make_shared<ngraph::op::Rescale>(rescale1);
+
+  auto callback = [rescale_input](pattern::Matcher& m) {
+    NGRAPH_INFO << "HEFusion.merge_rescales";
+    NGRAPH_INFO << "root " << m.get_match_root()->description();
+
+    auto pattern_map = m.get_pattern_map();
+    auto minput = m.get_pattern_map()[rescale_input];
+
+    auto matched_vec = m.get_matched_nodes();
+    NGRAPH_CHECK(matched_vec.size() == 3);
+
+    NGRAPH_INFO << "matched nodes";
+    for (auto& elem : matched_vec) {
+      NGRAPH_INFO << elem->description();
+    }
+    NGRAPH_CHECK(matched_vec[2]->description() != "Rescale");
+
+    auto rescale_node = std::make_shared<op::Rescale>(matched_vec[2]);
+
+    replace_node(m.get_match_root(), rescale_node);
+    return true;
+  };
+
+  auto m = std::make_shared<ngraph::pattern::Matcher>(rescale2, callback,
+                                                      "HEFusion.MergeRescales");
+  this->add_matcher(m);
+}
