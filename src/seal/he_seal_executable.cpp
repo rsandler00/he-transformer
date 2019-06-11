@@ -30,6 +30,7 @@
 #include "kernel/constant_seal.hpp"
 #include "kernel/convolution_seal.hpp"
 #include "kernel/dot_seal.hpp"
+#include "kernel/group_convolution_seal.hpp"
 #include "kernel/max_pool_seal.hpp"
 #include "kernel/minimum_seal.hpp"
 #include "kernel/multiply_seal.hpp"
@@ -51,6 +52,7 @@
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/fused/group_conv.hpp"
 #include "ngraph/op/max_pool.hpp"
 #include "ngraph/op/pad.hpp"
 #include "ngraph/op/passthrough.hpp"
@@ -106,7 +108,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
   pass_manager.register_pass<ngraph::pass::CoreFusion>();
   pass_manager.register_pass<ngraph::pass::ConstantFolding>();
-  pass_manager.register_pass<ngraph::pass::BatchFusion>();
+  // pass_manager.register_pass<ngraph::pass::BatchFusion>();
   pass_manager.register_pass<ngraph::pass::Liveness>();
   pass_manager.register_pass<ngraph::he::pass::HEFusion>();
   if (std::getenv("NGRAPH_ENABLE_VISUALIZE") != nullptr) {
@@ -549,9 +551,12 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     // get op inputs from map
+    NGRAPH_INFO << "Getting op inputs";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_inputs;
     for (auto input : op->inputs()) {
+      NGRAPH_INFO << "getting input tensor";
       descriptor::Tensor* tensor = &input.get_tensor();
+      NGRAPH_INFO << "got input tensor";
       op_inputs.push_back(tensor_map.at(tensor));
     }
 
@@ -562,6 +567,7 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     // get op outputs from map or create
+    NGRAPH_INFO << "Getting op outputs";
     std::vector<std::shared_ptr<ngraph::he::HETensor>> op_outputs;
     for (size_t i = 0; i < op->get_output_size(); ++i) {
       auto tensor = &op->output(i).get_tensor();
@@ -696,6 +702,8 @@ void ngraph::he::HESealExecutable::generate_calls(
                        .count()
                 << "ms";
   };
+
+  NGRAPH_INFO << "Genearting calls";
 
   std::vector<Shape> arg_shapes{};
   std::vector<Shape> unbatched_arg_shapes{};
@@ -971,6 +979,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Convolution: {
+      NGRAPH_INFO << "Conv op";
       const op::Convolution* c = static_cast<const op::Convolution*>(&node);
       auto window_movement_strides = c->get_window_movement_strides();
       auto window_dilation_strides = c->get_window_dilation_strides();
@@ -978,8 +987,12 @@ void ngraph::he::HESealExecutable::generate_calls(
       auto padding_above = c->get_padding_above();
       auto data_dilation_strides = c->get_data_dilation_strides();
 
+      NGRAPH_INFO << "casted op and got strides";
+
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = unbatched_arg_shapes[1];
+
+      NGRAPH_INFO << "about to call seal conv op";
 
       if (arg0_cipher != nullptr && arg1_cipher != nullptr &&
           out0_cipher != nullptr) {
@@ -988,7 +1001,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_he_seal_backend);
       } else if (arg0_cipher != nullptr && arg1_plain != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
@@ -996,7 +1009,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_he_seal_backend);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::convolution_seal(
@@ -1004,7 +1017,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_he_seal_backend);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::convolution_seal(
@@ -1012,7 +1025,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             out0_plain->get_elements(), in_shape0, in_shape1, out_shape,
             window_movement_strides, window_dilation_strides, padding_below,
             padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-            m_batch_size, m_he_seal_backend);
+            m_he_seal_backend);
       } else {
         throw ngraph_error("Convolution types not supported.");
       }
@@ -1051,6 +1064,28 @@ void ngraph::he::HESealExecutable::generate_calls(
             type, m_he_seal_backend);
       } else {
         throw ngraph_error("Dot types not supported.");
+      }
+      break;
+    }
+    case OP_TYPEID::GroupConvolution: {
+      const op::GroupConvolution* gc =
+          static_cast<const op::GroupConvolution*>(&node);
+      auto window_movement_strides = gc->get_window_movement_strides();
+      auto window_dilation_strides = gc->get_window_dilation_strides();
+      auto padding_below = gc->get_padding_below();
+      auto padding_above = gc->get_padding_above();
+      auto data_dilation_strides = gc->get_data_dilation_strides();
+
+      Shape in_shape0 = arg_shapes[0];
+      Shape in_shape1 = unbatched_arg_shapes[1];
+
+      if (arg0_plain != nullptr && arg1_plain != nullptr &&
+          out0_plain != nullptr) {
+        ngraph::he::group_convolution_seal(
+            arg0_plain->get_elements(), arg1_plain->get_elements(),
+            out0_plain->get_elements(), in_shape0, in_shape1, out_shape,
+            window_movement_strides, window_dilation_strides, padding_below,
+            padding_above, data_dilation_strides, type, m_he_seal_backend);
       }
       break;
     }

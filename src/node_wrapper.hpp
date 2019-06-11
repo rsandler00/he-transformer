@@ -33,6 +33,7 @@ class NodeWrapper;
 enum class ngraph::he::OP_TYPEID {
 #include "ngraph/op/op_tbl.hpp"
   NGRAPH_OP(BoundedRelu, ngraph::op) NGRAPH_OP(Rescale, ngraph::op)
+      NGRAPH_OP(GroupConvolution, ngraph::op)
 };
 #undef NGRAPH_OP
 

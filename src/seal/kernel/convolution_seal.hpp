@@ -40,7 +40,7 @@ inline void convolution_seal(
     size_t batch_axis_data, size_t input_channel_axis_data,
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
-    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    bool rotate_filter, const element::Type& element_type,
     const ngraph::he::HESealBackend& he_seal_backend) {
   // Comments throughout assume without loss of generality that:
   //
@@ -245,7 +245,7 @@ inline void convolution_seal(
     size_t batch_axis_data, size_t input_channel_axis_data,
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
-    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    bool rotate_filter, const element::Type& element_type,
     const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
@@ -393,7 +393,7 @@ inline void convolution_seal(
     size_t batch_axis_data, size_t input_channel_axis_data,
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
-    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    bool rotate_filter, const element::Type& element_type,
     const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
@@ -404,6 +404,7 @@ inline void convolution_seal(
   }
   size_t out_transform_size = out_coords.size();
   NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  NGRAPH_INFO << "Conv plain plain";
 
   // TODO: don't create new thread for every loop index, only one per thread
 #pragma omp parallel for
@@ -541,7 +542,7 @@ inline void convolution_seal(
     size_t batch_axis_data, size_t input_channel_axis_data,
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
-    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    bool rotate_filter, const element::Type& element_type,
     const ngraph::he::HESealBackend& he_seal_backend) {
   CoordinateTransform output_transform(out_shape);
 
