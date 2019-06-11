@@ -75,6 +75,7 @@
 #include "pass/insert_rescale.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
+#include "seal/kernel/rescale_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
@@ -108,7 +109,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::he::pass::HEFusion>();
   pass_manager.register_pass<ngraph::he::pass::InsertRescale>();
   if (std::getenv("NGRAPH_ENABLE_VISUALIZE") != nullptr) {
-    pass_manager.register_pass<ngraph::pass::VisualizeTree>("visualize");
+    pass_manager.register_pass<ngraph::pass::VisualizeTree>("function");
   }
   pass_manager.run_passes(function);
 
@@ -1253,6 +1254,16 @@ void ngraph::he::HESealExecutable::generate_calls(
           static_cast<const op::Passthrough*>(&node);
       throw unsupported_op{"Unsupported operation language: " +
                            passthrough->language()};
+    }
+    case OP_TYPEID::Rescale: {
+      NGRAPH_INFO << "Rescale op";
+      if (arg0_plain != nullptr && out0_plain != nullptr) {
+        ngraph::he::rescale_seal(arg0_plain->get_elements(),
+                                 out0_plain->get_elements());
+      } else {
+        throw ngraph_error("Reshape types not supported.");
+      }
+      break;
     }
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);

@@ -41,9 +41,9 @@ NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_multiply) {
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
-  auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_a = he_backend->create_plain_tensor(element::f32, shape);
   auto t_b = he_backend->create_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_result = he_backend->create_plain_tensor(element::f32, shape);
 
   copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
   copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});

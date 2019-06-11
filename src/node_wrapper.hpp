@@ -32,7 +32,7 @@ class NodeWrapper;
 #define NGRAPH_OP(a, b) a,
 enum class ngraph::he::OP_TYPEID {
 #include "ngraph/op/op_tbl.hpp"
-  NGRAPH_OP(BoundedRelu, ngraph::op)
+  NGRAPH_OP(BoundedRelu, ngraph::op) NGRAPH_OP(Rescale, ngraph::op)
 };
 #undef NGRAPH_OP
 
