@@ -24,13 +24,9 @@ namespace pass {
 
 class HEFusion : public ngraph::pass::GraphRewrite {
  public:
-  HEFusion() : GraphRewrite() {
-    construct_bounded_relu();
-    insert_rescale();
-  }
+  HEFusion() : GraphRewrite() { construct_bounded_relu(); }
 
   void construct_bounded_relu();
-  void insert_rescale();
 };
 }  // namespace pass
 }  // namespace he

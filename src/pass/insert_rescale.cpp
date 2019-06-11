@@ -34,10 +34,12 @@ using namespace ngraph;
 #define TI(x) std::type_index(typeid(x))
 
 static bool rescale_after_avg_pool(const std::shared_ptr<Node>& node) {
+  NGRAPH_INFO << "Rescale after avgpool";
   return true;
 }
 
 static bool rescale_after_conv(const std::shared_ptr<Node>& node) {
+  NGRAPH_INFO << "Rescale after conv";
   return true;
   /* auto broadcast = std::static_pointer_cast<op::Broadcast>(node);
   if (broadcast->get_input_shape(0) == broadcast->get_output_shape(0)) {
@@ -48,9 +50,11 @@ static bool rescale_after_conv(const std::shared_ptr<Node>& node) {
 }
 
 static bool rescale_after_dot(const std::shared_ptr<Node>& node) {
+  NGRAPH_INFO << "Rescale after dot";
   return true;
 }
 static bool rescale_after_multiply(const std::shared_ptr<Node>& node) {
+  NGRAPH_INFO << "Rescale after mult";
   return true;
 }
 
@@ -72,15 +76,6 @@ bool ngraph::he::pass::InsertRescale::run_on_function(
     if (handler != dispatcher.end()) {
       clobbered = handler->second(n) || clobbered;
     }
-
-    // Here we're checking on a common base class of a family of template
-    // classes, which is more than type info can handle.
-    auto sclb = std::dynamic_pointer_cast<op::ScalarConstantLikeBase>(n);
-    if (sclb != nullptr) {
-      replace_node(sclb, sclb->as_constant());
-      clobbered = true;
-    }
   }
-
   return clobbered;
 }
