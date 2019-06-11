@@ -26,6 +26,7 @@
 #include "ngraph/op/dot.hpp"
 #include "ngraph/op/multiply.hpp"
 #include "ngraph/util.hpp"
+#include "op/rescale.hpp"
 #include "pass/insert_rescale.hpp"
 
 using namespace std;
@@ -55,6 +56,12 @@ static bool rescale_after_dot(const std::shared_ptr<Node>& node) {
 }
 static bool rescale_after_multiply(const std::shared_ptr<Node>& node) {
   NGRAPH_INFO << "Rescale after mult";
+  auto multiply = std::static_pointer_cast<op::Multiply>(node);
+
+  shared_ptr<Node> multiply_copy = multiply->copy_with_new_args(
+      NodeVector{multiply->get_argument(0), multiply->get_argument(1)});
+  auto rescale_node = make_shared<op::Rescale>(multiply_copy);
+  replace_node(multiply, rescale_node);
   return true;
 }
 
