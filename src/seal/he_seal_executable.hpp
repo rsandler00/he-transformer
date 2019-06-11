@@ -116,7 +116,8 @@ class HESealExecutable : public runtime::Executable {
   std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
       m_minimum_ciphertexts;
 
-  std::set<std::string> m_silent_ops{"Slice", "Broadcast", "Reshape"};
+  std::set<std::string> m_silent_ops{"Slice", "Broadcast", "Reshape",
+                                     "Convolution"};
 
   std::shared_ptr<seal::SEALContext>
       m_context;  // TODO: move to he_seal_executable.hpp

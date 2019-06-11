@@ -255,10 +255,13 @@ inline void convolution_seal(
     out_coords.emplace_back(out_coord);
   }
   size_t out_transform_size = out_coords.size();
-  NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  // NGRAPH_INFO << "Convolution output size " << out_transform_size;
+  // NGRAPH_INFO << "Cipher * Plain";
+  // typedef std::chrono::high_resolution_clock Clock;
+  // auto t1 = Clock::now();
 
-  // TODO: don't create new thread for every loop index, only one per thread
-#pragma omp parallel for
+// TODO: don't create new thread for every loop index, only one per thread
+#pragma omp parallel for schedule(dynamic)
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
     // Init thread-local memory pool for each thread
@@ -376,10 +379,16 @@ inline void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (out_coord_idx % 1000 == 0) {
+    /* if (out_coord_idx % 1000 == 0) {
       NGRAPH_INFO << "Finished out coord " << out_coord_idx;
-    }
+    } */
   }
+
+  /* auto t2 = Clock::now();
+   NGRAPH_INFO
+       << "\033[1;34mConv took "
+       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+       << "us \033[0m"; */
 }
 
 inline void convolution_seal(

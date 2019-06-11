@@ -617,7 +617,7 @@ bool ngraph::he::HESealExecutable::call(
     }
     if (m_silent_ops.find(op->description()) == m_silent_ops.end()) {
       NGRAPH_INFO << "\033[1;31m" << op->get_name() << " took "
-                  << m_timer_map[op].get_milliseconds() << "ms"
+                  << m_timer_map[op].get_microseconds() << "us"
                   << "\033[0m";
     }
   }
@@ -682,7 +682,8 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
     }
     auto t2 = Clock::now();
-    NGRAPH_INFO << "Rescale_xxx took "
+    NGRAPH_INFO << cipher_tensor->get_elements().size()
+                << "-element Rescale_xxx took "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
                                                                          t1)
                        .count()
