@@ -46,6 +46,7 @@ set(MULTI_TEST_SRC
     test_convolution.in.cpp
     test_dot.in.cpp
     test_he_fusion.in.cpp
+    test_insert_rescale.in.cpp
     test_layers.in.cpp
     test_maxpool.in.cpp
     test_minimum.in.cpp

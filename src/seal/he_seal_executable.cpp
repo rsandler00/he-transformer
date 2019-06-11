@@ -70,7 +70,9 @@
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
 #include "op/bounded_relu.hpp"
+#include "op/rescale.hpp"
 #include "pass/he_fusion.hpp"
+#include "pass/insert_rescale.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -104,6 +106,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   pass_manager.register_pass<ngraph::pass::Liveness>();
   pass_manager.register_pass<ngraph::he::pass::HEFusion>();
+  pass_manager.register_pass<ngraph::he::pass::InsertRescale>();
   pass_manager.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
