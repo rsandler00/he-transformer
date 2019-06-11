@@ -41,27 +41,30 @@ static bool rescale_after_avg_pool(const std::shared_ptr<Node>& node) {
 
 static bool rescale_after_conv(const std::shared_ptr<Node>& node) {
   NGRAPH_INFO << "Rescale after conv";
+  auto old_node = std::static_pointer_cast<op::Convolution>(node);
+  shared_ptr<Node> new_node = old_node->copy_with_new_args(
+      NodeVector{old_node->get_argument(0), old_node->get_argument(1)});
+  auto rescale_node = make_shared<op::Rescale>(new_node);
+  replace_node(old_node, rescale_node);
   return true;
-  /* auto broadcast = std::static_pointer_cast<op::Broadcast>(node);
-  if (broadcast->get_input_shape(0) == broadcast->get_output_shape(0)) {
-    replace_node(node, node->get_argument(0));
-    return true;
-  }
-  return false; */
 }
 
 static bool rescale_after_dot(const std::shared_ptr<Node>& node) {
   NGRAPH_INFO << "Rescale after dot";
+  auto old_node = std::static_pointer_cast<op::Dot>(node);
+  shared_ptr<Node> new_node = old_node->copy_with_new_args(
+      NodeVector{old_node->get_argument(0), old_node->get_argument(1)});
+  auto rescale_node = make_shared<op::Rescale>(new_node);
+  replace_node(old_node, rescale_node);
   return true;
 }
 static bool rescale_after_multiply(const std::shared_ptr<Node>& node) {
   NGRAPH_INFO << "Rescale after mult";
-  auto multiply = std::static_pointer_cast<op::Multiply>(node);
-
-  shared_ptr<Node> multiply_copy = multiply->copy_with_new_args(
-      NodeVector{multiply->get_argument(0), multiply->get_argument(1)});
-  auto rescale_node = make_shared<op::Rescale>(multiply_copy);
-  replace_node(multiply, rescale_node);
+  auto old_node = std::static_pointer_cast<op::Multiply>(node);
+  shared_ptr<Node> new_node = old_node->copy_with_new_args(
+      NodeVector{old_node->get_argument(0), old_node->get_argument(1)});
+  auto rescale_node = make_shared<op::Rescale>(new_node);
+  replace_node(old_node, rescale_node);
   return true;
 }
 
@@ -79,6 +82,14 @@ bool ngraph::he::pass::InsertRescale::run_on_function(
   for (const auto& n : function->get_ops()) {
     // Work around a warning [-Wpotentially-evaluated-expression]
     const Node& node = *n;
+
+    auto& outputs = node->outputs();
+    NGRAPH_CHECK(outputs.size() == 1,
+                 "node has more than one output in insert_rescale");
+    if (TI(outputs[0]) == ngraph::op::Rescale) {
+      NGRAPH_INFO << "Rescale op already there";
+    }
+
     auto handler = dispatcher.find(TI(node));
     if (handler != dispatcher.end()) {
       clobbered = handler->second(n) || clobbered;

@@ -104,3 +104,68 @@ NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_multiply_cipher_cipher) {
   EXPECT_TRUE(all_close((vector<float>{-6, 2, 0, 3, 4, -15}),
                         read_vector<float>(t_result), 1e-3f));
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_dot) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+  Shape shape{4};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Dot>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+
+  for (auto tensors : tensors_list) {
+    auto results = get<0>(tensors);
+    auto inputs = get<1>(tensors);
+
+    auto t_a = inputs[0];
+    auto t_b = inputs[1];
+    auto t_result = results[0];
+
+    copy_data(t_a, vector<float>{2, 2, 3, 4});
+    copy_data(t_b, vector<float>{5, 6, 7, 8});
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto handle = backend->compile(f);
+    EXPECT_EQ(1, count_ops_of_type<op::Rescale>(f));
+    handle->call_with_validate({t_result}, {t_a, t_b});
+    EXPECT_TRUE(
+        all_close(read_vector<float>(t_result), vector<float>{75}, 1e-3f));
+  }
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_conv) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+
+  auto shape_a = Shape{1, 1, 5, 5};
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto shape_b = Shape{1, 1, 3, 3};
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
+
+  // Create some tensors for input/output
+  auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
+
+  for (auto tensors : tensors_list) {
+    auto results = get<0>(tensors);
+    auto inputs = get<1>(tensors);
+
+    auto t_a = inputs[0];
+    auto t_b = inputs[1];
+    auto t_result = results[0];
+
+    copy_data(t_a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                                 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                                 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
+    copy_data(t_b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
+
+    auto f = make_shared<Function>(t, ParameterVector{a, b});
+    auto handle = backend->compile(f);
+    EXPECT_EQ(1, count_ops_of_type<op::Rescale>(f));
+    handle->call_with_validate({t_result}, {t_a, t_b});
+    EXPECT_TRUE(all_close(read_vector<float>(t_result),
+                          vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, 1e-1f));
+  }
+}
