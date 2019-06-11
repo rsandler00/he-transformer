@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018-2019 Intel Corporation
+// Copyright 2017-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,22 @@
 
 #pragma once
 
-#include "ngraph/pass/graph_rewrite.hpp"
+#include "ngraph/node.hpp"
+#include "ngraph/op/op.hpp"
+#include "ngraph/op/util/unary_elementwise_arithmetic.hpp"
 
 namespace ngraph {
-namespace he {
-namespace pass {
-
-class HEFusion : public ngraph::pass::GraphRewrite {
+namespace op {
+/// \brief Elementwise Minimum(Relu(arg, 0), alpha) operation.
+///
+class Rescale : public Op {
  public:
-  HEFusion() : GraphRewrite() {
-    construct_bounded_relu();
-    insert_rescale();
-  }
-
-  void construct_bounded_relu();
-  void insert_rescale();
+  /// \brief Constructs a BoundedRelu operation.
+  ///
+  /// \param arg Node input to the Relu.
+  Rescale(std::shared_ptr<ngraph::Node> arg);
+  virtual std::shared_ptr<Node> copy_with_new_args(
+      const NodeVector& new_args) const override;
 };
-}  // namespace pass
-}  // namespace he
+}  // namespace op
 }  // namespace ngraph

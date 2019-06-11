@@ -24,9 +24,11 @@ set (HE_SRC
 
     # pass
     pass/he_fusion.cpp
+    pass/insert_rescale.cpp
 
     # op
     op/bounded_relu.cpp
+    op/rescale.cpp
 
     # seal kernels
     seal/kernel/constant_seal.cpp

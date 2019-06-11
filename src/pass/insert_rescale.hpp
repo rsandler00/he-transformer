@@ -16,21 +16,14 @@
 
 #pragma once
 
-#include "ngraph/pass/graph_rewrite.hpp"
+#include "ngraph/pass/pass.hpp"
 
 namespace ngraph {
 namespace he {
 namespace pass {
-
-class HEFusion : public ngraph::pass::GraphRewrite {
+class InsertRescale : public ngraph::pass::FunctionPass {
  public:
-  HEFusion() : GraphRewrite() {
-    construct_bounded_relu();
-    insert_rescale();
-  }
-
-  void construct_bounded_relu();
-  void insert_rescale();
+  bool run_on_function(std::shared_ptr<ngraph::Function> function) override;
 };
 }  // namespace pass
 }  // namespace he

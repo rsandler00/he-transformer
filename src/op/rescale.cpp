@@ -1,5 +1,5 @@
 //*****************************************************************************
-// Copyright 2018-2019 Intel Corporation
+// Copyright 2017-2019 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,25 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //*****************************************************************************
+#include "ngraph/util.hpp"
+#include "op/rescale.hpp"
 
-#pragma once
+using namespace std;
+using namespace ngraph;
 
-#include "ngraph/pass/graph_rewrite.hpp"
+op::Rescale::Rescale(shared_ptr<Node> arg) : Op("Rescale", {arg}) {
+  constructor_validate_and_infer_types();
+  set_output_type(0, arg->get_element_type(), arg->get_shape());
+}
 
-namespace ngraph {
-namespace he {
-namespace pass {
-
-class HEFusion : public ngraph::pass::GraphRewrite {
- public:
-  HEFusion() : GraphRewrite() {
-    construct_bounded_relu();
-    insert_rescale();
+shared_ptr<Node> op::Rescale::copy_with_new_args(
+    const NodeVector& new_args) const {
+  if (new_args.size() != 1) {
+    throw ngraph_error("Incorrect number of new arguments");
   }
-
-  void construct_bounded_relu();
-  void insert_rescale();
-};
-}  // namespace pass
-}  // namespace he
-}  // namespace ngraph
+  return make_shared<Rescale>(new_args.at(0));
+}
