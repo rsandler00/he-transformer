@@ -107,6 +107,9 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::pass::Liveness>();
   pass_manager.register_pass<ngraph::he::pass::HEFusion>();
   pass_manager.register_pass<ngraph::he::pass::InsertRescale>();
+  if (std::getenv("NGRAPH_ENABLE_VISUALIZE") != nullptr) {
+    pass_manager.register_pass<ngraph::pass::VisualizeTree>("visualize");
+  }
   pass_manager.run_passes(function);
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
