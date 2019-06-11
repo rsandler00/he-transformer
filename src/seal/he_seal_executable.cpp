@@ -871,7 +871,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
 
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
-        throw ngraph_error("Relu types not supported");
+        throw ngraph_error("BoundedRelu types not supported");
       }
 
       if (!m_enable_client) {
@@ -1075,7 +1075,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         break;
       }
       if (arg0_cipher == nullptr || out0_cipher == nullptr) {
-        throw ngraph_error("Relu types not supported");
+        throw ngraph_error("MaxPool types not supported");
       }
 
       if (!m_enable_client) {
@@ -1182,14 +1182,14 @@ void ngraph::he::HESealExecutable::generate_calls(
             arg0_cipher->get_elements(), arg1_plain->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
-        lazy_rescaling(out0_cipher);
+        // lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_cipher != nullptr &&
                  out0_cipher != nullptr) {
         ngraph::he::multiply_seal(
             arg0_plain->get_elements(), arg1_cipher->get_elements(),
             out0_cipher->get_elements(), type, m_he_seal_backend,
             out0_cipher->get_batched_element_count());
-        lazy_rescaling(out0_cipher);
+        // lazy_rescaling(out0_cipher);
       } else if (arg0_plain != nullptr && arg1_plain != nullptr &&
                  out0_plain != nullptr) {
         ngraph::he::multiply_seal(
@@ -1245,7 +1245,7 @@ void ngraph::he::HESealExecutable::generate_calls(
             pad->get_padding_above(), pad->get_pad_mode(), m_batch_size,
             m_he_seal_backend);
       } else {
-        throw ngraph_error("Pad cipher vs. plain types not supported.");
+        throw ngraph_error("Pad types not supported.");
       }
       break;
     }
@@ -1257,11 +1257,15 @@ void ngraph::he::HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Rescale: {
       NGRAPH_INFO << "Rescale op";
-      if (arg0_plain != nullptr && out0_plain != nullptr) {
+      if (arg0_cipher != nullptr && out0_cipher != nullptr) {
+        ngraph::he::rescale_seal(arg0_cipher->get_elements(),
+                                 out0_cipher->get_elements(),
+                                 m_he_seal_backend);
+      } else if (arg0_plain != nullptr && out0_plain != nullptr) {
         ngraph::he::rescale_seal(arg0_plain->get_elements(),
                                  out0_plain->get_elements());
       } else {
-        throw ngraph_error("Reshape types not supported.");
+        throw ngraph_error("Rescale types not supported.");
       }
       break;
     }

@@ -30,7 +30,7 @@ using namespace ngraph;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_multiply) {
+NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_multiply_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
@@ -44,6 +44,31 @@ NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_multiply) {
   auto t_a = he_backend->create_plain_tensor(element::f32, shape);
   auto t_b = he_backend->create_plain_tensor(element::f32, shape);
   auto t_result = he_backend->create_plain_tensor(element::f32, shape);
+
+  copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
+  copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});
+  auto handle = backend->compile(f);
+  EXPECT_EQ(1, count_ops_of_type<op::Rescale>(f));
+
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close((vector<float>{-6, 2, 0, 3, 4, -15}),
+                        read_vector<float>(t_result), 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_multiply_cipher) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  Shape shape{2, 3};
+  auto a = make_shared<op::Parameter>(element::f32, shape);
+  auto b = make_shared<op::Parameter>(element::f32, shape);
+  auto t = make_shared<op::Multiply>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  // Create some tensors for input/output
+  auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_b = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
 
   copy_data(t_a, vector<float>{-2, -1, 0, 1, 2, 3});
   copy_data(t_b, vector<float>{3, -2, 5, 3, 2, -5});
