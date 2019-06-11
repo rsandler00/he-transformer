@@ -159,40 +159,8 @@ void ngraph::he::pass::HEFusion::insert_rescale_after_conv() {
   this->add_matcher(m);
 }
 
-void ngraph::he::pass::HEFusion::insert_rescale_after_avg_pool() {
-  return;
-
-  // TODO: fix below
-  /*
-  Shape shape{2, 2, 1, 1};
-  auto input1 = std::make_shared<pattern::op::Label>(element::f32, shape);
-  auto window_shape = Shape{1, 1, 1, 1};
-  auto window_movement_strides = Strides{1, 1};
-  auto padding_below = Shape{1, 1};
-  auto padding_above = Shape{1, 1};
-  auto avg_pool = std::make_shared<ngraph::op::AvgPool>(
-      input1, window_shape, window_movement_strides, padding_below,
-      padding_above);
-  auto rescale = std::make_shared<ngraph::op::Rescale>(avg_pool);
-
-  auto callback = [input1](pattern::Matcher& m) {
-    NGRAPH_INFO << "HEFusion.insert_rescale_after_avg_pool";
-    auto pattern_map = m.get_pattern_map();
-    auto m_avg_pool =
-        std::static_pointer_cast<ngraph::op::AvgPool>(m.get_match_root());
-    std::shared_ptr<ngraph::Node> new_node = m_avg_pool->copy_with_new_args(
-        NodeVector{m_avg_pool->get_argument(0), m_avg_pool->get_argument(1)});
-    auto rescale_node = std::make_shared<op::Rescale>(new_node);
-
-    replace_node(m_avg_pool, rescale_node);
-    return true;
-  };
-
-  auto m = std::make_shared<ngraph::pattern::Matcher>(
-      avg_pool, callback, "HEFusion.InsertRescaleAfterAvgPool");
-  this->add_matcher(m);
-  */
-}
+// TODO: enable!
+void ngraph::he::pass::HEFusion::insert_rescale_after_avg_pool() { return; }
 
 void ngraph::he::pass::HEFusion::merge_rescales() {
   auto rescale_input =
