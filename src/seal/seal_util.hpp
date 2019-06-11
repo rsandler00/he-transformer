@@ -17,6 +17,7 @@
 #pragma once
 
 #include <assert.h>
+#include <immintrin.h>
 #include <complex>
 #include <string>
 #include <vector>
@@ -145,8 +146,49 @@ inline void multiply_plain(
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
-  ngraph::he::multiply_plain_inplace(destination, value, he_seal_backend,
-                                     std::move(pool));
+  multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
+
+inline void multiply_poly_scalar_coeffmod64_avx2(
+    const uint64_t* poly, size_t coeff_count, uint64_t scalar,
+    const std::uint64_t modulus_value, const std::uint64_t const_ratio,
+    uint64_t* result) {
+  // TODO: check alignment and use load_ if aligned
+
+  __m512i poly_avx = _mm512_loadu_si512((poly));
+  __m512i z_avx;
+  __m512i carry_avx;
+
+  const __m512i scalar_avx = _mm512_set1_epi64(scalar);
+  const __m512i ratio_avx = _mm512_set1_epi64(const_ratio);
+
+  for (size_t i = 0; i < 1024; ++i) {
+    // poly, scalar are each < 2^30, so we can mult epu32
+    // z_avx will be 64 bits
+    z_avx = _mm512_mul_epu32(poly_avx, scalar_avx);
+
+    // Multiply and keep top 64 (or top 32) bits. Not mulhi_epi64 command :-(
+    carry = z_avx * ratio_avx;
+
+    // _mm512_mullo_epi64
+  }
+  /* for (; coeff_count--; poly++, result++) {
+    // Multiplication
+    unsigned long long z = *poly * scalar;
+
+    // Barrett base 2^64 reduction
+    unsigned long long carry;
+    // Carry will store the result modulo 2^64
+    seal::util::multiply_uint64_hw64(z, const_ratio, &carry);
+    // Barrett subtraction
+    carry = z - carry * modulus_value;
+    // Possible correction term
+    *result =
+        carry -
+        (modulus_value &
+         static_cast<uint64_t>(-static_cast<int64_t>(carry >= modulus_value)));
+  } */
+}
+
 }  // namespace he
 }  // namespace ngraph
