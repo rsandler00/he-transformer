@@ -60,6 +60,7 @@
 #include "ngraph/op/slice.hpp"
 #include "ngraph/op/sum.hpp"
 #include "ngraph/pass/assign_layout.hpp"
+#include "ngraph/pass/batch_fusion.hpp"
 #include "ngraph/pass/constant_folding.hpp"
 #include "ngraph/pass/core_fusion.hpp"
 #include "ngraph/pass/like_replacement.hpp"
@@ -105,6 +106,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
   pass_manager.register_pass<ngraph::pass::CoreFusion>();
   pass_manager.register_pass<ngraph::pass::ConstantFolding>();
+  pass_manager.register_pass<ngraph::pass::BatchFusion>();
   pass_manager.register_pass<ngraph::pass::Liveness>();
   pass_manager.register_pass<ngraph::he::pass::HEFusion>();
   if (std::getenv("NGRAPH_ENABLE_VISUALIZE") != nullptr) {
@@ -1243,7 +1245,6 @@ void ngraph::he::HESealExecutable::generate_calls(
                            passthrough->language()};
     }
     case OP_TYPEID::Rescale: {
-      NGRAPH_INFO << "Rescale op";
       if (arg0_cipher != nullptr && out0_cipher != nullptr) {
         ngraph::he::rescale_seal(arg0_cipher->get_elements(),
                                  out0_cipher->get_elements(),
