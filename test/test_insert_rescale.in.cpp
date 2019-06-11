@@ -127,7 +127,7 @@ NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_dot) {
 
     copy_data(t_a, vector<float>{2, 2, 3, 4});
     copy_data(t_b, vector<float>{5, 6, 7, 8});
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
+
     auto handle = backend->compile(f);
     EXPECT_EQ(1, count_ops_of_type<op::Rescale>(f));
     handle->call_with_validate({t_result}, {t_a, t_b});
@@ -144,6 +144,7 @@ NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_conv) {
   auto shape_b = Shape{1, 1, 3, 3};
   auto b = make_shared<op::Parameter>(element::f32, shape_b);
   auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   // Create some tensors for input/output
   auto tensors_list = generate_plain_cipher_tensors({t}, {a, b}, backend.get());
@@ -161,7 +162,6 @@ NGRAPH_TEST(${BACKEND_NAME}, insert_rescale_after_conv) {
                                  2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
     copy_data(t_b, vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
 
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
     auto handle = backend->compile(f);
     EXPECT_EQ(1, count_ops_of_type<op::Rescale>(f));
     handle->call_with_validate({t_result}, {t_a, t_b});

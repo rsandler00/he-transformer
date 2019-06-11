@@ -17,11 +17,16 @@
 #include <memory>
 
 #include "ngraph/builder/make_constant.hpp"
+#include "ngraph/op/avg_pool.hpp"
+#include "ngraph/op/convolution.hpp"
+#include "ngraph/op/dot.hpp"
 #include "ngraph/op/minimum.hpp"
+#include "ngraph/op/multiply.hpp"
 #include "ngraph/op/relu.hpp"
 #include "ngraph/pattern/matcher.hpp"
 #include "ngraph/pattern/op/label.hpp"
 #include "ngraph/runtime/cpu/op/bounded_relu.hpp"
+#include "op/rescale.hpp"
 #include "pass/he_fusion.hpp"
 
 void ngraph::he::pass::HEFusion::construct_bounded_relu() {
@@ -76,5 +81,54 @@ void ngraph::he::pass::HEFusion::construct_bounded_relu() {
   };
 
   auto m = std::make_shared<pattern::Matcher>(min, callback, "BoundedRelu");
+  this->add_matcher(m);
+}
+
+void ngraph::he::pass::HEFusion::insert_rescale_after_dot() {
+  auto dot1_input = std::make_shared<pattern::op::Label>(element::f32, Shape{});
+  auto dot2_input = std::make_shared<pattern::op::Label>(element::f32, Shape{});
+  auto dot = std::make_shared<ngraph::op::Dot>(dot1_input, dot2_input);
+
+  auto rescale = std::make_shared<ngraph::op::Rescale>(dot);
+
+  auto callback = [dot1_input, dot2_input](pattern::Matcher& m) {
+    NGRAPH_INFO << "HEFusion.insert_rescale_after_dot";
+    auto pattern_map = m.get_pattern_map();
+    auto m_dot = std::static_pointer_cast<ngraph::op::Dot>(m.get_match_root());
+    std::shared_ptr<ngraph::Node> new_node = m_dot->copy_with_new_args(
+        NodeVector{m_dot->get_argument(0), m_dot->get_argument(1)});
+    auto rescale_node = std::make_shared<op::Rescale>(new_node);
+
+    replace_node(m_dot, rescale_node);
+    return true;
+  };
+
+  auto m = std::make_shared<ngraph::pattern::Matcher>(
+      dot, callback, "HEFusion.InsertRescaleAfterDot");
+  this->add_matcher(m);
+}
+
+void ngraph::he::pass::HEFusion::insert_rescale_after_multiply() {
+  auto mul1_input = std::make_shared<pattern::op::Label>(element::f32, Shape{});
+  auto mul2_input = std::make_shared<pattern::op::Label>(element::f32, Shape{});
+  auto mul = std::make_shared<ngraph::op::Multiply>(mul1_input, mul2_input);
+
+  auto rescale = std::make_shared<ngraph::op::Rescale>(mul);
+
+  auto callback = [mul1_input, mul2_input](pattern::Matcher& m) {
+    NGRAPH_INFO << "HEFusion.insert_rescale_after_multiply";
+    auto pattern_map = m.get_pattern_map();
+    auto m_mul =
+        std::static_pointer_cast<ngraph::op::Multiply>(m.get_match_root());
+    std::shared_ptr<ngraph::Node> new_node = m_mul->copy_with_new_args(
+        NodeVector{m_mul->get_argument(0), m_mul->get_argument(1)});
+    auto rescale_node = std::make_shared<op::Rescale>(new_node);
+
+    replace_node(m_mul, rescale_node);
+    return true;
+  };
+
+  auto m = std::make_shared<ngraph::pattern::Matcher>(
+      mul, callback, "HEFusion.InsertRescaleAfterMultiply");
   this->add_matcher(m);
 }

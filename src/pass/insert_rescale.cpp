@@ -20,6 +20,7 @@
 #include <typeinfo>
 #include <unordered_map>
 
+#include "ngraph/check.hpp"
 #include "ngraph/op/add.hpp"
 #include "ngraph/op/avg_pool.hpp"
 #include "ngraph/op/convolution.hpp"
@@ -83,16 +84,23 @@ bool ngraph::he::pass::InsertRescale::run_on_function(
     // Work around a warning [-Wpotentially-evaluated-expression]
     const Node& node = *n;
 
-    auto& outputs = node->outputs();
+    NGRAPH_INFO << node.description();
+
+    auto outputs = node.outputs();
     NGRAPH_CHECK(outputs.size() == 1,
                  "node has more than one output in insert_rescale");
-    if (TI(outputs[0]) == ngraph::op::Rescale) {
-      NGRAPH_INFO << "Rescale op already there";
-    }
+    NGRAPH_INFO << "output node " << outputs[0].get_node()->description();
 
-    auto handler = dispatcher.find(TI(node));
-    if (handler != dispatcher.end()) {
-      clobbered = handler->second(n) || clobbered;
+    auto rescale_op =
+        dynamic_cast<const ngraph::op::Rescale*>(outputs[0].get_node());
+    if (rescale_op != nullptr) {
+      NGRAPH_INFO << "Rescale op already there";
+    } else {
+      NGRAPH_INFO << "Rescale not yet there";
+      auto handler = dispatcher.find(TI(node));
+      if (handler != dispatcher.end()) {
+        clobbered = handler->second(n) || clobbered;
+      }
     }
   }
   return clobbered;
