@@ -107,7 +107,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
   pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   pass_manager.register_pass<ngraph::pass::Liveness>();
   pass_manager.register_pass<ngraph::he::pass::HEFusion>();
-  // pass_manager.register_pass<ngraph::he::pass::InsertRescale>();
   if (std::getenv("NGRAPH_ENABLE_VISUALIZE") != nullptr) {
     pass_manager.register_pass<ngraph::pass::VisualizeTree>("function");
   }

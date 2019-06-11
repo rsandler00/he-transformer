@@ -53,10 +53,6 @@ void ngraph::he::scalar_multiply_seal(
 
     he_seal_backend.get_evaluator()->relinearize_inplace(
         out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
-
-    // TODO: lazy rescaling if before dot
-    // he_seal_backend.get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
-    //                                                         pool);
   }
 }
 

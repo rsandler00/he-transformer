@@ -209,7 +209,6 @@ inline void convolution_seal(
 
         ngraph::he::scalar_multiply_seal(*mult_arg0, *mult_arg1, prod,
                                          element_type, he_seal_backend, pool);
-        // TODO: rescale?
         if (first_add) {
           sum = prod;
           first_add = false;
