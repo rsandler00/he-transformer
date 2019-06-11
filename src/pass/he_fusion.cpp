@@ -91,7 +91,6 @@ void ngraph::he::pass::HEFusion::insert_rescale_after_dot() {
   auto rescale = std::make_shared<ngraph::op::Rescale>(dot);
 
   auto callback = [input1, input2](pattern::Matcher& m) {
-    NGRAPH_INFO << "HEFusion.insert_rescale_after_dot";
     auto pattern_map = m.get_pattern_map();
     auto m_dot = std::static_pointer_cast<ngraph::op::Dot>(m.get_match_root());
     std::shared_ptr<ngraph::Node> new_node = m_dot->copy_with_new_args(
@@ -114,7 +113,6 @@ void ngraph::he::pass::HEFusion::insert_rescale_after_multiply() {
   auto rescale = std::make_shared<ngraph::op::Rescale>(mul);
 
   auto callback = [input1, input2](pattern::Matcher& m) {
-    NGRAPH_INFO << "HEFusion.insert_rescale_after_multiply";
     auto pattern_map = m.get_pattern_map();
     auto m_mul =
         std::static_pointer_cast<ngraph::op::Multiply>(m.get_match_root());
@@ -132,7 +130,6 @@ void ngraph::he::pass::HEFusion::insert_rescale_after_multiply() {
 }
 
 void ngraph::he::pass::HEFusion::insert_rescale_after_conv() {
-  NGRAPH_INFO << "insert_rescale_after_conv";
   Shape shape{2, 2, 1, 1};
   auto input1 = std::make_shared<pattern::op::Label>(element::f32, shape);
   auto input2 = std::make_shared<pattern::op::Label>(element::f32, shape);
@@ -142,7 +139,6 @@ void ngraph::he::pass::HEFusion::insert_rescale_after_conv() {
   auto rescale = std::make_shared<ngraph::op::Rescale>(conv);
 
   auto callback = [input1, input2](pattern::Matcher& m) {
-    NGRAPH_INFO << "HEFusion.insert_rescale_after_conv";
     auto pattern_map = m.get_pattern_map();
     auto m_conv =
         std::static_pointer_cast<ngraph::op::Convolution>(m.get_match_root());
@@ -169,21 +165,11 @@ void ngraph::he::pass::HEFusion::merge_rescales() {
   auto rescale2 = std::make_shared<ngraph::op::Rescale>(rescale1);
 
   auto callback = [rescale_input](pattern::Matcher& m) {
-    NGRAPH_INFO << "HEFusion.merge_rescales";
-    NGRAPH_INFO << "root " << m.get_match_root()->description();
-
     auto pattern_map = m.get_pattern_map();
     auto minput = m.get_pattern_map()[rescale_input];
-
     auto matched_vec = m.get_matched_nodes();
     NGRAPH_CHECK(matched_vec.size() == 3);
-
-    NGRAPH_INFO << "matched nodes";
-    for (auto& elem : matched_vec) {
-      NGRAPH_INFO << elem->description();
-    }
     NGRAPH_CHECK(matched_vec[2]->description() != "Rescale");
-
     auto rescale_node = std::make_shared<op::Rescale>(matched_vec[2]);
 
     replace_node(m.get_match_root(), rescale_node);
