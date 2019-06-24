@@ -52,7 +52,7 @@ class HESealEncryptionParameters {
 
     std::vector<seal::SmallModulus> seal_coeff_modulus;
     for (const auto& value : coeff_modulus) {
-      NGRAPH_INFO << "Setting coeff mod " << value;
+      // NGRAPH_INFO << "Setting coeff mod " << value;
       seal_coeff_modulus.emplace_back(seal::SmallModulus(value));
     }
     m_seal_encryption_parameters.set_coeff_modulus(seal_coeff_modulus);
@@ -120,7 +120,7 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
 
   const char* config_path = getenv("NGRAPH_HE_SEAL_CONFIG");
   if (config_path == nullptr) {
-    NGRAPH_INFO << "Using default SEAL CKKS parameters" << config_path;
+    // NGRAPH_INFO << "Using default SEAL CKKS parameters" << config_path;
     return default_ckks_parameters();
   }
 
@@ -194,8 +194,8 @@ inline ngraph::he::HESealEncryptionParameters parse_config_or_use_default(
         uint64_t bit_count = stoi(coeff_mod_name.substr(11, 2));
         coeff_count = coeff_mod->begin().value();
 
-        NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " "
-                    << bit_count << "-bit coefficients";
+        //NGRAPH_INFO << "Using SEAL CKKS config with " << coeff_count << " "
+          //          << bit_count << "-bit coefficients";
 
         if (bit_count == 30) {
           small_mods = seal::util::global_variables::default_small_mods_30bit;
