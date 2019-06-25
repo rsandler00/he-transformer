@@ -2,7 +2,7 @@ This example demonstrates a simple example of a small matrix multiplication and 
 
 To run on the CKKS backend,
 ```bash
-NGRAPH_TF_BACKEND=HE_SEAL python axpy.py
+NGRAPH_TF_BACKEND=HE_SEAL_CKKS python axpy.py
 ```
 
 #  Client-server model
@@ -12,7 +12,7 @@ Instead, a client will provide the server with encrypted data.
 The client uses python bindings. See the `python` folder for instructions to build he-transformer with python bindings.
 
 For a simple demonstration of a server-client approach, run
-`NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python ax.py`
+`NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL_CKKS python ax.py`
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
 
@@ -29,7 +29,7 @@ For a deep learning example using the client-server model, see the `MNIST-MLP` f
   * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model
   * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.
-  * `NGRAPH_TF_BACKEND`. Set to `HE_SEAL` to use the HE backend. Set to `CPU` for inference on un-encrypted data
+  * `NGRAPH_TF_BACKEND`. Set to `HE_SEAL_CKKS` to use the HE backend with CKKS encryption schema. Set to `CPU` for inference on un-encrypted data
   * `NGRAPH_COMPLEX_PACK`. Set to 1 to enable complex packing. For models with no ciphertext-ciphertext multiplication, this will double the capacity from `N/2` to `N`. As a rough guideline, this flag is suitable when the model does not contain polynomial activations, and when either the model or data remains unencrypted
   * `OMP_NUM_THREADS`. Set to 1 to enable single-threaded execution (useful for debugging). For best multi-threaded performance, this number should be tuned.
   * `NGRAPH_HE_SEAL_CONFIG`. Used to specify the encryption parameters filename. If no value is passed, a small parameter choice will be used. ***Warning***: the default parameter selection does not enforce any security level. The configuration file should be of the form:
