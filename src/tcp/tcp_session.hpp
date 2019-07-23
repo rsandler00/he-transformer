@@ -15,9 +15,13 @@
 //*****************************************************************************
 
 #pragma once
+
 #include <boost/asio.hpp>
 #include <functional>
 #include <memory>
+#include <mutex>
+
+#include "ngraph/log.hpp"
 #include "tcp/tcp_message.hpp"
 
 using boost::asio::ip::tcp;
@@ -29,11 +33,10 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   TCPSession(tcp::socket socket,
              std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
+        m_writing(false),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
   void start() { do_read_header(); }
-
-  tcp::socket& socket() { return m_socket; }
 
  public:
   void do_read_header() {
@@ -47,10 +50,8 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             do_read_body();
           } else {
             if (ec) {
-              std::stringstream ss;
-              ss << "Server error reading message: " << ec.message()
-                 << std::endl;
-              throw std::runtime_error(ss.str());
+              NGRAPH_INFO << "Server error reading message: " << ec.message();
+              // throw std::runtime_error(ss.str());
             }
           }
         });
@@ -67,28 +68,35 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
             m_message_callback(m_message);
             do_read_header();
           } else {
-            std::stringstream ss;
-            ss << "Error reading message body: " << ec.message() << std::endl;
-            throw std::runtime_error(ss.str());
+            NGRAPH_INFO << "Server error reading message: " << ec.message();
+            throw std::runtime_error("Server error reading message");
           }
         });
   }
 
   void do_write(const TCPMessage&& message) {
+    std::lock_guard<std::mutex> lock(m_write_mtx);
     auto self(shared_from_this());
+    m_writing = true;
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(message.header_ptr(), message.num_bytes()),
         [this, self](boost::system::error_code ec, std::size_t length) {
           if (ec) {
-            std::cout << "Error writing message in session: " << ec.message()
-                      << std::endl;
+            NGRAPH_INFO << "Error writing message in session: " << ec.message();
+
+          } else {
+            m_writing = false;
           }
         });
   }
 
+  bool is_writing() const { return m_writing; }
+
   TCPMessage m_message;
   tcp::socket m_socket;
+  bool m_writing;
+  std::mutex m_write_mtx;
 
   // Called after message is received
   std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
